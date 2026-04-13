@@ -8,6 +8,7 @@
   "theme_color": "#111827",
   "orientation": "any",
   "icons": [
+    
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
