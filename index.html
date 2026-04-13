@@ -6,21 +6,21 @@
   <title>АртЗапуск — CRM управления отзывами</title>
   <meta name="description" content="CRM-система управления доставкой отзывов на площадках">
   <meta name="theme-color" content="#111827">
-
+ 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-
+ 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-
+ 
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+ 
   <style>
     /* ================================================================
        CSS VARIABLES — LIGHT THEME
@@ -59,7 +59,7 @@
       --sidebar-w-mob:  280px;
       --transition:     0.2s cubic-bezier(0.4,0,0.2,1);
     }
-
+ 
     /* ================================================================
        RESET & BASE
        ================================================================ */
@@ -81,12 +81,12 @@
     ::-webkit-scrollbar-track{background:transparent}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
     ::-webkit-scrollbar-thumb:hover{background:var(--fg-muted)}
-
+ 
     /* ================================================================
        UTILITY
        ================================================================ */
     .hidden{display:none!important}
-
+ 
     /* ================================================================
        BACKGROUND PATTERN (subtle blueprint grid)
        ================================================================ */
@@ -97,7 +97,7 @@
         linear-gradient(90deg,rgba(17,24,39,0.018) 1px,transparent 1px);
       background-size:80px 80px;
     }
-
+ 
     /* ================================================================
        ANIMATIONS
        ================================================================ */
@@ -110,17 +110,17 @@
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
     @keyframes scanMove{0%{top:0;opacity:0}5%{opacity:1}95%{opacity:1}100%{top:100%;opacity:0}}
     @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
-
+ 
     .animate-fade-in{animation:fadeIn 0.4s ease both}
     .animate-scale-in{animation:scaleIn 0.3s ease both}
     .animate-shake{animation:shake 0.4s ease}
-
+ 
     .scan-line{
       position:absolute;width:100%;height:1px;
       background:linear-gradient(90deg,transparent,rgba(17,24,39,0.06),transparent);
       animation:scanMove 10s linear infinite;
     }
-
+ 
     /* ================================================================
        AUTH SCREEN
        ================================================================ */
@@ -131,9 +131,9 @@
       transition:opacity 0.4s ease,visibility 0.4s ease;
     }
     #authScreen.out{opacity:0;visibility:hidden;pointer-events:none}
-
+ 
     .auth-wrapper{width:100%;max-width:440px;padding:20px;position:relative;z-index:2}
-
+ 
     /* Logo block */
     .auth-logo{text-align:center;margin-bottom:40px;animation:fadeIn 0.6s ease both}
     .auth-logo-icon{
@@ -145,7 +145,7 @@
     .auth-logo-icon svg{width:28px;height:28px;color:#fff}
     .auth-logo h1{font-size:26px;font-weight:700;letter-spacing:-0.02em;color:var(--fg)}
     .auth-logo p{font-size:13px;color:var(--fg-muted);margin-top:4px;letter-spacing:0.02em}
-
+ 
     /* Auth card */
     .auth-card{
       background:var(--bg-secondary);border:1px solid var(--border);
@@ -153,14 +153,14 @@
       box-shadow:var(--shadow-lg);position:relative;overflow:hidden;
       animation:fadeIn 0.6s ease 0.15s both;
     }
-
+ 
     /* Corner marks */
     .corner{position:absolute;width:16px;height:16px;border-color:rgba(17,24,39,0.08);border-style:solid}
     .corner-tl{top:0;left:0;border-width:2px 0 0 2px}
     .corner-tr{top:0;right:0;border-width:2px 2px 0 0}
     .corner-bl{bottom:0;left:0;border-width:0 0 2px 2px}
     .corner-br{bottom:0;right:0;border-width:0 2px 2px 0}
-
+ 
     /* Tabs */
     .tab-group{
       display:flex;background:var(--bg);border-radius:var(--radius-sm);
@@ -176,7 +176,7 @@
       background:var(--bg-secondary);color:var(--fg);
       box-shadow:0 1px 4px rgba(0,0,0,0.06);
     }
-
+ 
     /* Sub-tabs (role selection in register) */
     .sub-tabs{
       display:flex;background:var(--bg);border-radius:6px;padding:2px;
@@ -191,7 +191,7 @@
     }
     .sub-tabs input{display:none}
     .sub-tabs input:checked+label{background:var(--bg-secondary);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,0.05)}
-
+ 
     /* Form views */
     .auth-views{position:relative;min-height:280px}
     .auth-view{
@@ -202,7 +202,7 @@
       opacity:0;pointer-events:none;transform:translateX(20px);
     }
     .auth-view.is-hidden.slide-left{transform:translateX(-20px)}
-
+ 
     /* Inputs */
     .field{position:relative;margin-bottom:16px}
     .field:last-of-type{margin-bottom:0}
@@ -229,10 +229,10 @@
     textarea.field-input:not(:placeholder-shown)~.field-label{
       top:-8px;transform:none;font-size:11px;font-weight:500;color:var(--accent);background:var(--bg-secondary);
     }
-
+ 
     .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:480px){.field-row{grid-template-columns:1fr}}
-
+ 
     /* Primary button */
     .btn-primary{
       width:100%;padding:14px 24px;margin-top:24px;
@@ -248,7 +248,7 @@
     .btn-primary .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.25);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite}
     .btn-primary.loading .btn-label{visibility:hidden}
     .btn-primary.loading .spinner{display:block;position:absolute}
-
+ 
     /* Banner */
     .banner{
       display:flex;align-items:flex-start;gap:10px;
@@ -260,14 +260,14 @@
     .banner.error{background:var(--error-bg);border:1px solid rgba(220,38,38,0.15);color:var(--error)}
     .banner.success{background:var(--success-bg);border:1px solid rgba(5,150,105,0.15);color:var(--success)}
     .banner.warning{background:var(--warning-bg);border:1px solid rgba(217,119,6,0.15);color:var(--warning)}
-
+ 
     /* Footer hint */
     .auth-footer{text-align:center;margin-top:24px;animation:fadeIn 0.6s ease 0.3s both}
     .auth-footer span{
       display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-muted);
     }
     .auth-footer svg{width:14px;height:14px}
-
+ 
     /* ================================================================
        APP SHELL
        ================================================================ */
@@ -278,11 +278,11 @@
       grid-template-areas:"header header" "sidebar content";
     }
     #appShell.active{display:grid}
-
+ 
     @media(max-width:1023px){
       #appShell{grid-template-columns:1fr;grid-template-areas:"header" "content"}
     }
-
+ 
     /* ================================================================
        HEADER
        ================================================================ */
@@ -293,9 +293,9 @@
       background:var(--bg-secondary);border-bottom:1px solid var(--border);
       position:relative;z-index:100;
     }
-
+ 
     .header-left{display:flex;align-items:center;gap:12px}
-
+ 
     .hamburger{
       display:none;width:40px;height:40px;
       border:1px solid var(--border);border-radius:var(--radius-sm);
@@ -305,7 +305,7 @@
     .hamburger:hover{background:var(--bg);border-color:var(--accent-subtle)}
     .hamburger svg{width:20px;height:20px}
     @media(max-width:1023px){.hamburger{display:flex}}
-
+ 
     .logo{display:flex;align-items:center;gap:10px}
     .logo-icon{
       width:36px;height:36px;background:var(--accent);border-radius:var(--radius-sm);
@@ -315,9 +315,9 @@
     .logo-icon svg{width:18px;height:18px;color:#fff}
     .logo-text{font-size:18px;font-weight:700;letter-spacing:-0.02em}
     @media(max-width:480px){.logo-text{display:none}}
-
+ 
     .header-right{display:flex;align-items:center;gap:8px}
-
+ 
     /* Notification bell */
     .notif-btn{
       position:relative;width:40px;height:40px;
@@ -336,7 +336,7 @@
       animation:pulse 2s ease infinite;
     }
     .notif-badge.hidden{display:none}
-
+ 
     /* User card */
     .user-btn{
       display:flex;align-items:center;gap:10px;
@@ -355,7 +355,7 @@
     .user-name{font-size:13px;font-weight:600;color:var(--fg);line-height:1.2}
     .user-role{font-size:11px;color:var(--fg-muted);line-height:1.2}
     @media(max-width:600px){.user-info{display:none}}
-
+ 
     /* Profile dropdown */
     .dropdown{
       position:absolute;top:calc(100% + 8px);right:0;
@@ -379,7 +379,7 @@
     .dropdown-item svg{width:16px;height:16px;flex-shrink:0}
     .dropdown-item.danger{color:var(--error)}
     .dropdown-item.danger:hover{background:var(--error-bg)}
-
+ 
     /* ================================================================
        SIDEBAR
        ================================================================ */
@@ -391,7 +391,7 @@
       overflow-y:auto;overflow-x:hidden;
     }
     .sidebar-spacer{flex:1}
-
+ 
     @media(max-width:1023px){
       .sidebar{
         position:fixed;top:var(--header-h);left:0;bottom:0;
@@ -401,7 +401,7 @@
       }
       .sidebar.open{transform:translateX(0);box-shadow:var(--shadow-xl)}
     }
-
+ 
     /* Mobile overlay */
     .sidebar-overlay{
       display:none;position:fixed;inset:0;top:var(--header-h);
@@ -409,7 +409,7 @@
       opacity:0;transition:opacity 0.3s ease;
     }
     .sidebar-overlay.visible{display:block;opacity:1}
-
+ 
     /* Nav button */
     .nav-btn{
       width:100%;height:56px;
@@ -422,14 +422,14 @@
     .nav-btn span{display:none;font-size:13px;font-weight:500}
     .nav-btn:hover{background:var(--bg);color:var(--fg-secondary)}
     .nav-btn.active{background:var(--bg);color:var(--fg);border-color:var(--border)}
-
+ 
     @media(max-width:1023px){
       .nav-btn{
         height:auto;padding:12px 16px;justify-content:flex-start;
       }
       .nav-btn span{display:block}
     }
-
+ 
     /* ================================================================
        CONTENT AREA
        ================================================================ */
@@ -440,18 +440,18 @@
       display:flex;flex-direction:column;
     }
     @media(max-width:600px){.content-area{padding:8px}}
-
+ 
     .content-card{
       flex:1;background:var(--bg-secondary);border:1px solid var(--border);
       border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
       overflow:hidden;position:relative;
     }
-
+ 
     #pageContent{
       height:100%;overflow:hidden;
       display:flex;flex-direction:column;
     }
-
+ 
     .page-loader{
       display:flex;align-items:center;justify-content:center;
       height:100%;gap:12px;color:var(--fg-muted);font-size:13px;
@@ -461,7 +461,7 @@
       border:2px solid var(--border);border-top-color:var(--accent);
       border-radius:50%;animation:spin 0.7s linear infinite;
     }
-
+ 
     /* ================================================================
        PASSWORD CHANGE MODAL
        ================================================================ */
@@ -481,7 +481,7 @@
     .modal-overlay.visible .modal-box{transform:scale(1)}
     .modal-title{font-size:18px;font-weight:700;margin-bottom:6px}
     .modal-desc{font-size:13px;color:var(--fg-muted);margin-bottom:24px;line-height:1.5}
-
+ 
     /* ================================================================
        TOAST NOTIFICATIONS
        ================================================================ */
@@ -491,7 +491,7 @@
       pointer-events:none;max-width:360px;
     }
     @media(max-width:480px){#toastContainer{right:12px;left:12px;max-width:none}}
-
+ 
     .toast{
       display:flex;align-items:center;gap:10px;
       padding:14px 18px;border-radius:var(--radius-md);
@@ -507,7 +507,7 @@
     .toast.error{border-color:rgba(220,38,38,0.2);color:var(--error)}
     .toast.warning{border-color:rgba(217,119,6,0.2);color:var(--warning)}
     .toast.info{border-color:rgba(37,99,235,0.2);color:var(--info)}
-
+ 
     /* ================================================================
        NOTIFICATION PANEL
        ================================================================ */
@@ -522,7 +522,7 @@
     }
     .notif-panel.open{opacity:1;visibility:visible;transform:translateY(0)}
     @media(max-width:480px){.notif-panel{width:calc(100vw - 24px);right:-50px}}
-
+ 
     .notif-panel-header{
       display:flex;align-items:center;justify-content:space-between;
       padding:16px;border-bottom:1px solid var(--border);
@@ -533,7 +533,7 @@
       font-weight:600;transition:opacity var(--transition);
     }
     .notif-mark-read:hover{opacity:0.7}
-
+ 
     .notif-list{flex:1;overflow-y:auto;padding:8px}
     .notif-item{
       display:flex;gap:12px;padding:12px;border-radius:var(--radius-sm);
@@ -552,15 +552,15 @@
   </style>
 </head>
 <body>
-
+ 
   <div class="bg-pattern"></div>
-
+ 
   <!-- ============================================================
        AUTH SCREEN
        ============================================================ -->
   <div id="authScreen">
     <div class="scan-line"></div>
-
+ 
     <div class="auth-wrapper">
       <div class="auth-logo">
         <div class="auth-logo-icon">
@@ -571,13 +571,13 @@
         <h1>АртЗапуск</h1>
         <p>CRM управления отзывами</p>
       </div>
-
+ 
       <div class="auth-card">
         <div class="corner corner-tl"></div>
         <div class="corner corner-tr"></div>
         <div class="corner corner-bl"></div>
         <div class="corner corner-br"></div>
-
+ 
         <!-- Tabs: Login / Register -->
         <div class="tab-group">
           <input type="radio" name="authTab" id="tabLogin" checked>
@@ -585,7 +585,7 @@
           <input type="radio" name="authTab" id="tabRegister">
           <label for="tabRegister">Регистрация</label>
         </div>
-
+ 
         <!-- Role sub-tabs (register only) -->
         <div class="sub-tabs" id="subTabs">
           <input type="radio" name="roleTab" id="roleAuthor" checked>
@@ -593,10 +593,10 @@
           <input type="radio" name="roleTab" id="roleManager">
           <label for="roleManager">Менеджер</label>
         </div>
-
+ 
         <!-- Auth views container -->
         <div class="auth-views">
-
+ 
           <!-- LOGIN FORM -->
           <form class="auth-view" id="loginView">
             <div class="field">
@@ -616,7 +616,7 @@
               <div class="spinner"></div>
             </button>
           </form>
-
+ 
           <!-- REGISTER FORM -->
           <form class="auth-view is-hidden" id="registerView">
             <div class="field-row">
@@ -662,7 +662,7 @@
           </form>
         </div>
       </div>
-
+ 
       <div class="auth-footer">
         <span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -671,12 +671,12 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- ============================================================
        APP SHELL
        ============================================================ -->
   <div id="appShell">
-
+ 
     <!-- HEADER -->
     <header class="header">
       <div class="header-left">
@@ -692,7 +692,7 @@
           <span class="logo-text">АртЗапуск</span>
         </div>
       </div>
-
+ 
       <div class="header-right">
         <!-- Notifications -->
         <div style="position:relative">
@@ -700,7 +700,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
             <span class="notif-badge hidden" id="notifBadge">0</span>
           </button>
-
+ 
           <!-- Notification Panel -->
           <div class="notif-panel" id="notifPanel">
             <div class="notif-panel-header">
@@ -712,7 +712,7 @@
             </div>
           </div>
         </div>
-
+ 
         <!-- User -->
         <div style="position:relative">
           <button class="user-btn" id="userBtn">
@@ -722,7 +722,7 @@
               <div class="user-role" id="headerRole">Роль</div>
             </div>
           </button>
-
+ 
           <!-- Dropdown -->
           <div class="dropdown" id="userDropdown">
             <div class="dropdown-header">
@@ -741,7 +741,7 @@
         </div>
       </div>
     </header>
-
+ 
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
       <div id="navItems"></div>
@@ -749,7 +749,7 @@
       <div id="navBottom"></div>
     </nav>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
+ 
     <!-- CONTENT -->
     <main class="content-area">
       <div class="content-card">
@@ -759,7 +759,7 @@
       </div>
     </main>
   </div>
-
+ 
   <!-- ============================================================
        PASSWORD CHANGE MODAL
        ============================================================ -->
@@ -787,28 +787,28 @@
       </form>
     </div>
   </div>
-
+ 
   <!-- TOAST CONTAINER -->
   <div id="toastContainer"></div>
-
-
+ 
+ 
   <!-- ============================================================
        JAVASCRIPT
        ============================================================ -->
   <script>
   (function(){
     'use strict';
-
+ 
     /* =============================================================
        CONFIG
        ============================================================= */
-    const SUPABASE_URL  = 'https://ncdwlmgwljjwpuawlssr.supabase.co';
-    const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8';
-
+    const SUPABASE_URL  = 'https://ybkxarbwjnfgfugxbedi.supabase.co';
+    const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlia3hhcmJ3am5mZ2Z1Z3hiZWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMTYxOTEsImV4cCI6MjA5MTU5MjE5MX0.qJpxJ0hJUMgtRSG4Xf1nYwoeyKY8zHmbrblFN_pV7S0';
+ 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.supabaseClient = sb;
     window.currentUser = null;
-
+ 
     /* =============================================================
        NAVIGATION MAP PER ROLE
        ============================================================= */
@@ -839,7 +839,7 @@
         { id:'settings',   icon:'settings',   label:'Настройки',     file:'modal6.html', bottom:true },
       ],
     };
-
+ 
     const ICONS = {
       dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
       deals:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>',
@@ -851,20 +851,20 @@
       mytasks:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>',
       status:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
     };
-
+ 
     const ROLE_LABELS = { super_admin:'Администратор', manager:'Менеджер', client:'Клиент', author:'Автор' };
-
+ 
     /* =============================================================
        STATE
        ============================================================= */
     let currentPage = null;
     let realtimeChannel = null;
-
+ 
     /* =============================================================
        DOM REFS
        ============================================================= */
     const $ = id => document.getElementById(id);
-
+ 
     const authScreen      = $('authScreen');
     const appShell        = $('appShell');
     const tabLogin        = $('tabLogin');
@@ -879,7 +879,7 @@
     const sidebarOverlay  = $('sidebarOverlay');
     const notifPanel      = $('notifPanel');
     const userDropdown    = $('userDropdown');
-
+ 
     /* =============================================================
        TOAST
        ============================================================= */
@@ -896,7 +896,7 @@
       $('toastContainer').appendChild(el);
       setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, 4000);
     };
-
+ 
     /* =============================================================
        LOGGER (action_logs)
        ============================================================= */
@@ -914,7 +914,7 @@
         });
       } catch(e) { console.warn('Log error:', e); }
     };
-
+ 
     /* =============================================================
        AUTH TABS
        ============================================================= */
@@ -926,7 +926,7 @@
       subTabs.classList.remove('visible');
       hideBanner(loginBanner); hideBanner(registerBanner);
     });
-
+ 
     tabRegister.addEventListener('change', () => {
       if (!tabRegister.checked) return;
       registerView.classList.remove('is-hidden');
@@ -934,7 +934,7 @@
       subTabs.classList.add('visible');
       hideBanner(loginBanner); hideBanner(registerBanner);
     });
-
+ 
     /* =============================================================
        PHONE MASK
        ============================================================= */
@@ -950,7 +950,7 @@
         e.target.value=f;
       }
     });
-
+ 
     /* =============================================================
        BANNER HELPERS
        ============================================================= */
@@ -959,7 +959,7 @@
       el.classList.add('visible');
     }
     function hideBanner(el) { el.classList.remove('visible'); }
-
+ 
     /* =============================================================
        BUTTON LOADING STATE
        ============================================================= */
@@ -967,7 +967,7 @@
       if (on) { btn.classList.add('loading'); btn.disabled = true; }
       else    { btn.classList.remove('loading'); btn.disabled = false; }
     }
-
+ 
     /* =============================================================
        LOGIN
        ============================================================= */
@@ -977,10 +977,10 @@
       const email = $('loginEmail').value.trim();
       const pass  = $('loginPassword').value;
       if (!email || !pass) return showBanner(loginBanner, 'Заполните все поля');
-
+ 
       const btn = $('loginBtn');
       btnLoad(btn, true);
-
+ 
       try {
         /* lookup by email or phone */
         let { data: user, error } = await sb
@@ -994,12 +994,12 @@
         if (user.password_hash !== pass) return showBanner(loginBanner, 'Неверный пароль');
         if (user.status === 'pending') return showBanner(loginBanner, 'Аккаунт ожидает подтверждения');
         if (user.status === 'blocked') return showBanner(loginBanner, 'Аккаунт заблокирован');
-
+ 
         /* success */
         window.currentUser = user;
         await sb.from('users').update({ last_login: new Date().toISOString() }).eq('id', user.id);
         logAction('user.login', 'user', user.id, { method:'email' });
-
+ 
         /* check must_change_password */
         if (user.must_change_password) {
           showPasswordChangeModal();
@@ -1012,7 +1012,7 @@
         btnLoad(btn, false);
       }
     });
-
+ 
     /* =============================================================
        REGISTER
        ============================================================= */
@@ -1030,25 +1030,25 @@
         role: $('roleAuthor').checked ? 'author' : 'manager',
         status: 'pending',
       };
-
+ 
       if (!fields.last_name || !fields.first_name || !fields.email || !fields.password_hash) {
         return showBanner(registerBanner, 'Заполните обязательные поля');
       }
-
+ 
       const btn = $('registerBtn');
       btnLoad(btn, true);
-
+ 
       try {
         const { error } = await sb.from('users').insert([fields]);
         if (error) {
           if (error.code === '23505') throw new Error('Email уже зарегистрирован');
           throw error;
         }
-
+ 
         registerBanner.classList.remove('error'); registerBanner.classList.add('success');
         showBanner(registerBanner);
         registerView.reset();
-
+ 
         setTimeout(() => {
           hideBanner(registerBanner);
           tabLogin.checked = true;
@@ -1061,32 +1061,32 @@
         btnLoad(btn, false);
       }
     });
-
+ 
     /* =============================================================
        PASSWORD CHANGE (first login for clients)
        ============================================================= */
     function showPasswordChangeModal() {
       $('pwdChangeModal').classList.add('visible');
     }
-
+ 
     $('pwdChangeForm').addEventListener('submit', async e => {
       e.preventDefault();
       hideBanner($('pwdBanner'));
       const newPwd     = $('newPwd').value;
       const confirmPwd = $('confirmPwd').value;
-
+ 
       if (newPwd.length < 6) return showBanner($('pwdBanner'), 'Минимум 6 символов');
       if (newPwd !== confirmPwd) return showBanner($('pwdBanner'), 'Пароли не совпадают');
-
+ 
       const btn = $('pwdChangeBtn');
       btnLoad(btn, true);
-
+ 
       try {
         const { error } = await sb.from('users')
           .update({ password_hash: newPwd, must_change_password: false })
           .eq('id', window.currentUser.id);
         if (error) throw error;
-
+ 
         window.currentUser.must_change_password = false;
         $('pwdChangeModal').classList.remove('visible');
         logAction('user.password_change', 'user', window.currentUser.id);
@@ -1098,7 +1098,7 @@
         btnLoad(btn, false);
       }
     });
-
+ 
     /* =============================================================
        ENTER APP
        ============================================================= */
@@ -1109,12 +1109,12 @@
       buildNavigation();
       loadNotifications();
       setupRealtime();
-
+ 
       /* load first page */
       const nav = getNavItems();
       if (nav.length > 0) navigateTo(nav[0].id);
     }
-
+ 
     /* =============================================================
        LOGOUT
        ============================================================= */
@@ -1122,25 +1122,25 @@
       logAction('user.logout', 'user', window.currentUser?.id);
       window.currentUser = null;
       currentPage = null;
-
+ 
       if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
-
+ 
       appShell.classList.remove('active');
       authScreen.classList.remove('out');
       closeAllDropdowns();
-
+ 
       loginView.reset();
       registerView.reset();
       tabLogin.checked = true;
       tabLogin.dispatchEvent(new Event('change'));
       hideBanner(loginBanner);
       hideBanner(registerBanner);
-
+ 
       pageContent.innerHTML = '<div class="page-loader"><div class="spinner"></div><span>Загрузка...</span></div>';
     }
-
+ 
     $('logoutBtn').addEventListener('click', logout);
-
+ 
     /* =============================================================
        HEADER UI
        ============================================================= */
@@ -1150,14 +1150,14 @@
       const initials = ((u.first_name||'')[0]||'')+((u.last_name||'')[0]||'');
       const fullName = (u.first_name||'')+' '+(u.last_name||'');
       const roleLabel = ROLE_LABELS[u.role] || u.role;
-
+ 
       $('headerAvatar').textContent = initials.toUpperCase()||'П';
       $('headerName').textContent   = fullName.trim()||u.email;
       $('headerRole').textContent   = roleLabel;
       $('dropdownName').textContent = fullName.trim()||u.email;
       $('dropdownEmail').textContent= u.email;
     }
-
+ 
     /* =============================================================
        BUILD NAVIGATION
        ============================================================= */
@@ -1166,15 +1166,15 @@
       if (!u) return [];
       return NAV_CONFIG[u.role] || [];
     }
-
+ 
     function buildNavigation() {
       const items = getNavItems();
       const main  = items.filter(i => !i.bottom);
       const bottom= items.filter(i => i.bottom);
-
+ 
       $('navItems').innerHTML  = main.map(i => navBtnHTML(i)).join('');
       $('navBottom').innerHTML = bottom.map(i => navBtnHTML(i)).join('');
-
+ 
       sidebar.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           navigateTo(btn.dataset.page);
@@ -1182,13 +1182,13 @@
         });
       });
     }
-
+ 
     function navBtnHTML(item) {
       return `<button class="nav-btn" data-page="${item.id}" data-file="${item.file}" title="${item.label}">
         ${ICONS[item.icon]||''}<span>${item.label}</span>
       </button>`;
     }
-
+ 
     /* =============================================================
        PAGE ROUTING
        ============================================================= */
@@ -1196,34 +1196,34 @@
       const items = getNavItems();
       const item = items.find(i => i.id === pageId);
       if (!item) return;
-
+ 
       currentPage = pageId;
-
+ 
       /* highlight nav */
       sidebar.querySelectorAll('.nav-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.page === pageId);
       });
-
+ 
       /* load fragment */
       loadFragment(item.file);
     }
-
+ 
     async function loadFragment(file) {
       pageContent.innerHTML = '<div class="page-loader"><div class="spinner"></div><span>Загрузка...</span></div>';
-
+ 
       try {
         const res = await fetch(file);
         if (!res.ok) throw new Error('Файл не найден: ' + file);
         const html = await res.text();
-
+ 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         pageContent.innerHTML = '';
-
+ 
         Array.from(doc.body.childNodes).forEach(node => {
           pageContent.appendChild(document.importNode(node, true));
         });
-
+ 
         /* execute scripts */
         pageContent.querySelectorAll('script').forEach(oldScript => {
           const newScript = document.createElement('script');
@@ -1240,7 +1240,7 @@
         </div>`;
       }
     }
-
+ 
     /* settings page from dropdown */
     document.querySelectorAll('[data-page="settings"]').forEach(el => {
       el.addEventListener('click', () => {
@@ -1249,43 +1249,43 @@
         closeSidebar();
       });
     });
-
+ 
     /* =============================================================
        NOTIFICATIONS
        ============================================================= */
     async function loadNotifications() {
       const u = window.currentUser;
       if (!u) return;
-
+ 
       try {
         const { data, error } = await sb.from('notifications')
           .select('*')
           .eq('user_id', u.id)
           .order('created_at', { ascending: false })
           .limit(30);
-
+ 
         if (error) throw error;
         renderNotifications(data || []);
       } catch(e) { console.warn('Notif load error:', e); }
     }
-
+ 
     function renderNotifications(items) {
       const list = $('notifList');
       const badge = $('notifBadge');
       const unreadCount = items.filter(n => !n.is_read).length;
-
+ 
       if (unreadCount > 0) {
         badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
         badge.classList.remove('hidden');
       } else {
         badge.classList.add('hidden');
       }
-
+ 
       if (items.length === 0) {
         list.innerHTML = '<div class="notif-empty">Нет уведомлений</div>';
         return;
       }
-
+ 
       list.innerHTML = items.map(n => {
         const ago = timeAgo(n.created_at);
         return `<div class="notif-item ${n.is_read?'':'unread'}" data-id="${n.id}">
@@ -1297,7 +1297,7 @@
           </div>
         </div>`;
       }).join('');
-
+ 
       list.querySelectorAll('.notif-item').forEach(el => {
         el.addEventListener('click', async () => {
           const id = el.dataset.id;
@@ -1309,21 +1309,21 @@
         });
       });
     }
-
+ 
     $('markAllReadBtn').addEventListener('click', async () => {
       const u = window.currentUser;
       if (!u) return;
       await sb.from('notifications').update({ is_read: true }).eq('user_id', u.id).eq('is_read', false);
       loadNotifications();
     });
-
+ 
     /* =============================================================
        REALTIME
        ============================================================= */
     function setupRealtime() {
       const u = window.currentUser;
       if (!u) return;
-
+ 
       realtimeChannel = sb.channel('app-realtime')
         .on('postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${u.id}` },
@@ -1335,7 +1335,7 @@
         )
         .subscribe();
     }
-
+ 
     /* =============================================================
        HAMBURGER / SIDEBAR
        ============================================================= */
@@ -1344,12 +1344,12 @@
       sidebarOverlay.classList.toggle('visible', sidebar.classList.contains('open'));
     });
     sidebarOverlay.addEventListener('click', closeSidebar);
-
+ 
     function closeSidebar() {
       sidebar.classList.remove('open');
       sidebarOverlay.classList.remove('visible');
     }
-
+ 
     /* =============================================================
        DROPDOWNS (user, notifications)
        ============================================================= */
@@ -1358,13 +1358,13 @@
       userDropdown.classList.toggle('open');
       notifPanel.classList.remove('open');
     });
-
+ 
     $('notifBtn').addEventListener('click', e => {
       e.stopPropagation();
       notifPanel.classList.toggle('open');
       userDropdown.classList.remove('open');
     });
-
+ 
     document.addEventListener('click', e => {
       if (!userDropdown.contains(e.target) && !$('userBtn').contains(e.target)) {
         userDropdown.classList.remove('open');
@@ -1373,12 +1373,12 @@
         notifPanel.classList.remove('open');
       }
     });
-
+ 
     function closeAllDropdowns() {
       userDropdown.classList.remove('open');
       notifPanel.classList.remove('open');
     }
-
+ 
     /* =============================================================
        UTILS
        ============================================================= */
@@ -1387,7 +1387,7 @@
       div.textContent = str;
       return div.innerHTML;
     }
-
+ 
     function timeAgo(isoStr) {
       if (!isoStr) return '';
       const diff = Date.now() - new Date(isoStr).getTime();
@@ -1400,7 +1400,7 @@
       if (days < 7)   return days + ' дн. назад';
       return new Date(isoStr).toLocaleDateString('ru-RU');
     }
-
+ 
     /* format date nicely */
     window.formatDate = function(isoStr) {
       if (!isoStr) return '—';
@@ -1408,12 +1408,12 @@
       return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'long', year:'numeric' }) +
         ', ' + d.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
     };
-
+ 
     /* format money */
     window.formatMoney = function(num) {
       return new Intl.NumberFormat('ru-RU').format(num || 0);
     };
-
+ 
     /* =============================================================
        INIT — check saved session (simple localStorage)
        ============================================================= */
@@ -1436,7 +1436,7 @@
       /* show login */
       authScreen.classList.remove('out');
     })();
-
+ 
     /* persist session on login */
     const origEnterApp = enterApp;
     enterApp = function() {
@@ -1445,18 +1445,18 @@
       }
       origEnterApp();
     };
-
+ 
     /* clear session on logout */
     const origLogout = logout;
     logout = function() {
       localStorage.removeItem('az_user_id');
       origLogout();
     };
-
+ 
     /* re-bind logout after reassignment */
     $('logoutBtn').removeEventListener('click', origLogout);
     $('logoutBtn').addEventListener('click', logout);
-
+ 
   })();
   </script>
 </body>
