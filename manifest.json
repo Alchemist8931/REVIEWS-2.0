@@ -1,12 +1,12 @@
 {
-  "name": "АртЗапуск CRM",
+  "name": "АртЗапуск — CRM управления отзывами",
   "short_name": "АртЗапуск",
-  "description": "CRM-система управления доставкой отзывов на площадках",
+  "description": "CRM-система управления доставкой отзывов",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111827",
+  "background_color": "#F5F6F8",
   "theme_color": "#111827",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -22,5 +22,4 @@
     }
   ]
 }
-
 
