@@ -1,0 +1,174 @@
+<!-- modal4.html — Управление пользователями (super_admin) -->
+<div class="m-root" id="m4Root">
+<style>
+  .m-root{display:flex;flex-direction:column;height:100%;font-family:'SN Pro',sans-serif;overflow:hidden}
+  .m-header{display:flex;justify-content:space-between;align-items:center;height:52px;min-height:52px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg-secondary);gap:12px}
+  .m-header-title{font-size:14px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;color:var(--fg)}
+  .m-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+
+  .search-bar{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .search-input{flex:1;min-width:200px;padding:10px 14px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);outline:none;font-family:inherit}
+  .search-input:focus{border-color:var(--accent)}
+  .filter-btn{padding:6px 14px;font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:99px;background:var(--bg-secondary);color:var(--fg-muted);cursor:pointer;transition:all 0.2s}
+  .filter-btn:hover{border-color:var(--fg-muted);color:var(--fg-secondary)}
+  .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  .user-card{display:flex;align-items:center;gap:16px;padding:16px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);transition:box-shadow 0.2s}
+  .user-card:hover{box-shadow:var(--shadow-sm)}
+  @media(max-width:700px){.user-card{flex-direction:column;align-items:flex-start}}
+  .uc-avatar{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+  .uc-info{flex:1;min-width:0}
+  .uc-name{font-size:14px;font-weight:600;color:var(--fg)}
+  .uc-meta{font-size:12px;color:var(--fg-muted);display:flex;gap:12px;flex-wrap:wrap;margin-top:2px}
+  .uc-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+
+  .badge{display:inline-flex;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase}
+  .badge.admin{background:rgba(139,92,246,0.08);color:#7C3AED}
+  .badge.manager{background:var(--info-bg);color:var(--info)}
+  .badge.client{background:var(--success-bg);color:var(--success)}
+  .badge.author{background:var(--warning-bg);color:var(--warning)}
+  .badge.active{background:var(--success-bg);color:var(--success)}
+  .badge.pending{background:var(--warning-bg);color:var(--warning)}
+  .badge.blocked{background:var(--error-bg);color:var(--error)}
+
+  .act-btn{padding:6px 12px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--fg-secondary);cursor:pointer;transition:all 0.2s}
+  .act-btn:hover{border-color:var(--accent);color:var(--fg)}
+  .act-btn.success{background:var(--success-bg);color:var(--success);border-color:rgba(5,150,105,0.2)}
+  .act-btn.success:hover{background:var(--success);color:#fff}
+  .act-btn.danger{background:var(--error-bg);color:var(--error);border-color:rgba(220,38,38,0.2)}
+  .act-btn.danger:hover{background:var(--error);color:#fff}
+
+  .empty{text-align:center;padding:40px 20px;color:var(--fg-muted);font-size:13px}
+</style>
+
+<header class="m-header">
+  <div class="m-header-title">Пользователи</div>
+</header>
+
+<div class="m-body" id="m4Body">
+  <div class="empty">Загрузка...</div>
+</div>
+
+<script>
+(function(){
+  const sb = window.supabaseClient;
+  const user = window.currentUser;
+  if(!sb||!user) return;
+  if(user.role!=='super_admin'){
+    document.getElementById('m4Body').innerHTML='<div class="empty">Доступ запрещён</div>';
+    return;
+  }
+
+  const body = document.getElementById('m4Body');
+  let allUsers = [];
+  let currentFilter = 'all';
+  let searchQuery = '';
+
+  loadUsers();
+
+  async function loadUsers(){
+    body.innerHTML='<div class="empty">Загрузка...</div>';
+    try{
+      const {data,error}=await sb.from('users').select('*').order('created_at',{ascending:false});
+      if(error) throw error;
+      allUsers=data||[];
+      renderUsers();
+    }catch(e){body.innerHTML=`<div class="empty" style="color:var(--error)">Ошибка: ${e.message}</div>`;}
+  }
+
+  function renderUsers(){
+    const filtered = allUsers.filter(u=>{
+      if(currentFilter!=='all'&&u.role!==currentFilter) return false;
+      if(searchQuery){
+        const q=searchQuery.toLowerCase();
+        return (u.first_name||'').toLowerCase().includes(q)||(u.last_name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)||(u.phone||'').includes(q);
+      }
+      return true;
+    });
+
+    const roleLabels={super_admin:'Админ',manager:'Менеджер',client:'Клиент',author:'Автор'};
+    const roleCounts={};
+    allUsers.forEach(u=>{roleCounts[u.role]=(roleCounts[u.role]||0)+1;});
+
+    body.innerHTML=`
+      <div class="search-bar">
+        <input class="search-input" id="userSearch" placeholder="Поиск по имени, email, телефону..." value="${searchQuery}">
+        <button class="filter-btn ${currentFilter==='all'?'active':''}" data-f="all">Все (${allUsers.length})</button>
+        ${Object.entries(roleLabels).map(([k,v])=>`<button class="filter-btn ${currentFilter===k?'active':''}" data-f="${k}">${v} (${roleCounts[k]||0})</button>`).join('')}
+      </div>
+      <div id="usersList"></div>
+    `;
+
+    document.getElementById('userSearch').addEventListener('input',e=>{searchQuery=e.target.value;renderUsers();});
+    body.querySelectorAll('.filter-btn').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.f;renderUsers();}));
+
+    const list=document.getElementById('usersList');
+    if(filtered.length===0){list.innerHTML='<div class="empty">Не найдено</div>';return;}
+
+    list.innerHTML=filtered.map(u=>{
+      const initials=((u.first_name||'')[0]||'')+((u.last_name||'')[0]||'');
+      const fullName=`${u.last_name||''} ${u.first_name||''} ${u.middle_name||''}`.trim();
+      const roleBadge=`<span class="badge ${u.role==='super_admin'?'admin':u.role}">${roleLabels[u.role]||u.role}</span>`;
+      const statusBadge=`<span class="badge ${u.status}">${u.status==='active'?'Активен':u.status==='pending'?'Ожидает':'Заблокирован'}</span>`;
+
+      let actions='';
+      if(u.id!==user.id){
+        if(u.status==='pending') actions+=`<button class="act-btn success" onclick="activateUser('${u.id}')">Активировать</button>`;
+        if(u.status==='active') actions+=`<button class="act-btn danger" onclick="blockUser('${u.id}')">Заблокировать</button>`;
+        if(u.status==='blocked') actions+=`<button class="act-btn success" onclick="activateUser('${u.id}')">Разблокировать</button>`;
+        actions+=`<select class="act-btn" onchange="changeRole('${u.id}',this.value)" style="cursor:pointer">
+          ${Object.entries(roleLabels).map(([k,v])=>`<option value="${k}" ${u.role===k?'selected':''}>${v}</option>`).join('')}
+        </select>`;
+      }
+
+      return `<div class="user-card">
+        <div class="uc-avatar">${initials.toUpperCase()||'?'}</div>
+        <div class="uc-info">
+          <div class="uc-name">${esc(fullName)||u.email}</div>
+          <div class="uc-meta">
+            <span>${u.email}</span>
+            <span>${u.phone||'—'}</span>
+            <span>${u.city||'—'}</span>
+            ${roleBadge} ${statusBadge}
+          </div>
+        </div>
+        <div class="uc-actions">${actions}</div>
+      </div>`;
+    }).join('');
+  }
+
+  window.activateUser = async function(id){
+    try{
+      const {error}=await sb.from('users').update({status:'active'}).eq('id',id);
+      if(error) throw error;
+      logAction('user.activate','user',id);
+      showToast('Пользователь активирован','success');
+      loadUsers();
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  window.blockUser = async function(id){
+    if(!confirm('Заблокировать пользователя?')) return;
+    try{
+      const {error}=await sb.from('users').update({status:'blocked'}).eq('id',id);
+      if(error) throw error;
+      logAction('user.block','user',id);
+      showToast('Пользователь заблокирован','warning');
+      loadUsers();
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  window.changeRole = async function(id, newRole){
+    try{
+      const {error}=await sb.from('users').update({role:newRole}).eq('id',id);
+      if(error) throw error;
+      logAction('user.role_change','user',id,{new_role:newRole});
+      showToast('Роль изменена','success');
+      loadUsers();
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+})();
+</script>
+</div>
