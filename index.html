@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>АртЗапуск — CRM управления отзывами</title>
+  <meta name="description" content="CRM-система управления доставкой отзывов на площадках">
+  <meta name="theme-color" content="#111827">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* ================================================================
+       CSS VARIABLES — LIGHT THEME
+       ================================================================ */
+    :root {
+      --bg:             #F5F6F8;
+      --bg-secondary:   #FFFFFF;
+      --bg-tertiary:    #EDEEF1;
+      --bg-hover:       #F0F1F4;
+      --fg:             #111827;
+      --fg-secondary:   #4B5563;
+      --fg-muted:       #9CA3AF;
+      --border:         #E5E7EB;
+      --border-light:   #F3F4F6;
+      --accent:         #111827;
+      --accent-hover:   #374151;
+      --accent-subtle:  rgba(17,24,39,0.06);
+      --success:        #059669;
+      --success-bg:     rgba(5,150,105,0.08);
+      --warning:        #D97706;
+      --warning-bg:     rgba(217,119,6,0.08);
+      --error:          #DC2626;
+      --error-bg:       rgba(220,38,38,0.08);
+      --info:           #2563EB;
+      --info-bg:        rgba(37,99,235,0.08);
+      --shadow-sm:      0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:      0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg:      0 12px 40px rgba(0,0,0,0.10);
+      --shadow-xl:      0 24px 60px rgba(0,0,0,0.14);
+      --radius-sm:      8px;
+      --radius-md:      12px;
+      --radius-lg:      16px;
+      --radius-xl:      20px;
+      --header-h:       64px;
+      --sidebar-w:      72px;
+      --sidebar-w-mob:  280px;
+      --transition:     0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ================================================================
+       RESET & BASE
+       ================================================================ */
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth;overflow:hidden;height:100%}
+    body{
+      font-family:'SN Pro',system-ui,-apple-system,sans-serif;
+      background:var(--bg);
+      color:var(--fg);
+      height:100%;
+      overflow:hidden;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    a{color:inherit;text-decoration:none}
+    button{font-family:inherit;cursor:pointer}
+    input,textarea,select{font-family:inherit}
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--fg-muted)}
+
+    /* ================================================================
+       UTILITY
+       ================================================================ */
+    .hidden{display:none!important}
+
+    /* ================================================================
+       BACKGROUND PATTERN (subtle blueprint grid)
+       ================================================================ */
+    .bg-pattern{
+      position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:
+        linear-gradient(rgba(17,24,39,0.018) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(17,24,39,0.018) 1px,transparent 1px);
+      background-size:80px 80px;
+    }
+
+    /* ================================================================
+       ANIMATIONS
+       ================================================================ */
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeOut{from{opacity:1}to{opacity:0}}
+    @keyframes slideInRight{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes slideInLeft{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes scaleIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+    @keyframes scanMove{0%{top:0;opacity:0}5%{opacity:1}95%{opacity:1}100%{top:100%;opacity:0}}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+    .animate-fade-in{animation:fadeIn 0.4s ease both}
+    .animate-scale-in{animation:scaleIn 0.3s ease both}
+    .animate-shake{animation:shake 0.4s ease}
+
+    .scan-line{
+      position:absolute;width:100%;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(17,24,39,0.06),transparent);
+      animation:scanMove 10s linear infinite;
+    }
+
+    /* ================================================================
+       AUTH SCREEN
+       ================================================================ */
+    #authScreen{
+      position:fixed;inset:0;z-index:1000;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--bg);
+      transition:opacity 0.4s ease,visibility 0.4s ease;
+    }
+    #authScreen.out{opacity:0;visibility:hidden;pointer-events:none}
+
+    .auth-wrapper{width:100%;max-width:440px;padding:20px;position:relative;z-index:2}
+
+    /* Logo block */
+    .auth-logo{text-align:center;margin-bottom:40px;animation:fadeIn 0.6s ease both}
+    .auth-logo-icon{
+      width:56px;height:56px;margin:0 auto 16px;
+      background:var(--accent);border-radius:var(--radius-md);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 16px rgba(17,24,39,0.16);
+    }
+    .auth-logo-icon svg{width:28px;height:28px;color:#fff}
+    .auth-logo h1{font-size:26px;font-weight:700;letter-spacing:-0.02em;color:var(--fg)}
+    .auth-logo p{font-size:13px;color:var(--fg-muted);margin-top:4px;letter-spacing:0.02em}
+
+    /* Auth card */
+    .auth-card{
+      background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:var(--radius-xl);padding:32px;
+      box-shadow:var(--shadow-lg);position:relative;overflow:hidden;
+      animation:fadeIn 0.6s ease 0.15s both;
+    }
+
+    /* Corner marks */
+    .corner{position:absolute;width:16px;height:16px;border-color:rgba(17,24,39,0.08);border-style:solid}
+    .corner-tl{top:0;left:0;border-width:2px 0 0 2px}
+    .corner-tr{top:0;right:0;border-width:2px 2px 0 0}
+    .corner-bl{bottom:0;left:0;border-width:0 0 2px 2px}
+    .corner-br{bottom:0;right:0;border-width:0 2px 2px 0}
+
+    /* Tabs */
+    .tab-group{
+      display:flex;background:var(--bg);border-radius:var(--radius-sm);
+      padding:3px;margin-bottom:28px;position:relative;
+    }
+    .tab-group label{
+      flex:1;text-align:center;padding:10px 16px;font-size:13px;font-weight:600;
+      border-radius:6px;cursor:pointer;color:var(--fg-muted);
+      transition:all var(--transition);position:relative;z-index:1;
+    }
+    .tab-group input{display:none}
+    .tab-group input:checked+label{
+      background:var(--bg-secondary);color:var(--fg);
+      box-shadow:0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    /* Sub-tabs (role selection in register) */
+    .sub-tabs{
+      display:flex;background:var(--bg);border-radius:6px;padding:2px;
+      margin-bottom:20px;
+      max-height:0;overflow:hidden;opacity:0;
+      transition:max-height 0.3s ease,opacity 0.3s ease,margin 0.3s ease;
+    }
+    .sub-tabs.visible{max-height:50px;opacity:1;margin-bottom:20px}
+    .sub-tabs label{
+      flex:1;text-align:center;padding:7px 12px;font-size:12px;font-weight:600;
+      border-radius:5px;cursor:pointer;color:var(--fg-muted);transition:all var(--transition)
+    }
+    .sub-tabs input{display:none}
+    .sub-tabs input:checked+label{background:var(--bg-secondary);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+
+    /* Form views */
+    .auth-views{position:relative;min-height:280px}
+    .auth-view{
+      width:100%;transition:opacity 0.3s ease,transform 0.3s ease;
+    }
+    .auth-view.is-hidden{
+      position:absolute;top:0;left:0;
+      opacity:0;pointer-events:none;transform:translateX(20px);
+    }
+    .auth-view.is-hidden.slide-left{transform:translateX(-20px)}
+
+    /* Inputs */
+    .field{position:relative;margin-bottom:16px}
+    .field:last-of-type{margin-bottom:0}
+    .field-input{
+      width:100%;padding:14px 16px;font-size:14px;
+      background:var(--bg);border:1.5px solid var(--border);
+      border-radius:var(--radius-sm);color:var(--fg);
+      outline:none;transition:all var(--transition);
+    }
+    .field-input::placeholder{color:transparent}
+    .field-input:focus{border-color:var(--accent);background:var(--bg-secondary);box-shadow:0 0 0 3px var(--accent-subtle)}
+    .field-label{
+      position:absolute;left:14px;top:50%;transform:translateY(-50%);
+      font-size:14px;color:var(--fg-muted);pointer-events:none;
+      transition:all 0.2s ease;background:transparent;padding:0 4px;
+    }
+    .field-input:focus~.field-label,
+    .field-input:not(:placeholder-shown)~.field-label{
+      top:0;font-size:11px;font-weight:500;color:var(--accent);background:var(--bg-secondary);
+    }
+    textarea.field-input{resize:none;min-height:80px}
+    textarea.field-input~.field-label{top:16px;transform:none}
+    textarea.field-input:focus~.field-label,
+    textarea.field-input:not(:placeholder-shown)~.field-label{
+      top:-8px;transform:none;font-size:11px;font-weight:500;color:var(--accent);background:var(--bg-secondary);
+    }
+
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:480px){.field-row{grid-template-columns:1fr}}
+
+    /* Primary button */
+    .btn-primary{
+      width:100%;padding:14px 24px;margin-top:24px;
+      background:var(--accent);color:#fff;
+      font-size:14px;font-weight:600;
+      border:none;border-radius:var(--radius-sm);
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      transition:all var(--transition);position:relative;overflow:hidden;
+    }
+    .btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 4px 16px rgba(17,24,39,0.18)}
+    .btn-primary:active{transform:translateY(0)}
+    .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
+    .btn-primary .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.25);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite}
+    .btn-primary.loading .btn-label{visibility:hidden}
+    .btn-primary.loading .spinner{display:block;position:absolute}
+
+    /* Banner */
+    .banner{
+      display:flex;align-items:flex-start;gap:10px;
+      padding:0 14px;border-radius:var(--radius-sm);font-size:12px;line-height:1.5;
+      max-height:0;opacity:0;overflow:hidden;transition:all 0.3s ease;margin-top:0;
+    }
+    .banner.visible{max-height:80px;opacity:1;padding:12px 14px;margin-top:16px}
+    .banner svg{flex-shrink:0;margin-top:1px}
+    .banner.error{background:var(--error-bg);border:1px solid rgba(220,38,38,0.15);color:var(--error)}
+    .banner.success{background:var(--success-bg);border:1px solid rgba(5,150,105,0.15);color:var(--success)}
+    .banner.warning{background:var(--warning-bg);border:1px solid rgba(217,119,6,0.15);color:var(--warning)}
+
+    /* Footer hint */
+    .auth-footer{text-align:center;margin-top:24px;animation:fadeIn 0.6s ease 0.3s both}
+    .auth-footer span{
+      display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-muted);
+    }
+    .auth-footer svg{width:14px;height:14px}
+
+    /* ================================================================
+       APP SHELL
+       ================================================================ */
+    #appShell{
+      display:none;height:100vh;
+      grid-template-rows:var(--header-h) 1fr;
+      grid-template-columns:var(--sidebar-w) 1fr;
+      grid-template-areas:"header header" "sidebar content";
+    }
+    #appShell.active{display:grid}
+
+    @media(max-width:1023px){
+      #appShell{grid-template-columns:1fr;grid-template-areas:"header" "content"}
+    }
+
+    /* ================================================================
+       HEADER
+       ================================================================ */
+    .header{
+      grid-area:header;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 20px;height:var(--header-h);
+      background:var(--bg-secondary);border-bottom:1px solid var(--border);
+      position:relative;z-index:100;
+    }
+
+    .header-left{display:flex;align-items:center;gap:12px}
+
+    .hamburger{
+      display:none;width:40px;height:40px;
+      border:1px solid var(--border);border-radius:var(--radius-sm);
+      background:transparent;align-items:center;justify-content:center;
+      transition:all var(--transition);color:var(--fg);
+    }
+    .hamburger:hover{background:var(--bg);border-color:var(--accent-subtle)}
+    .hamburger svg{width:20px;height:20px}
+    @media(max-width:1023px){.hamburger{display:flex}}
+
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-icon{
+      width:36px;height:36px;background:var(--accent);border-radius:var(--radius-sm);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 2px 8px rgba(17,24,39,0.12);
+    }
+    .logo-icon svg{width:18px;height:18px;color:#fff}
+    .logo-text{font-size:18px;font-weight:700;letter-spacing:-0.02em}
+    @media(max-width:480px){.logo-text{display:none}}
+
+    .header-right{display:flex;align-items:center;gap:8px}
+
+    /* Notification bell */
+    .notif-btn{
+      position:relative;width:40px;height:40px;
+      border:1px solid var(--border);border-radius:var(--radius-sm);
+      background:transparent;display:flex;align-items:center;justify-content:center;
+      transition:all var(--transition);color:var(--fg-secondary);
+    }
+    .notif-btn:hover{background:var(--bg);color:var(--fg)}
+    .notif-btn svg{width:20px;height:20px}
+    .notif-badge{
+      position:absolute;top:-4px;right:-4px;
+      min-width:18px;height:18px;padding:0 5px;
+      background:var(--error);color:#fff;font-size:10px;font-weight:700;
+      border-radius:99px;display:flex;align-items:center;justify-content:center;
+      border:2px solid var(--bg-secondary);
+      animation:pulse 2s ease infinite;
+    }
+    .notif-badge.hidden{display:none}
+
+    /* User card */
+    .user-btn{
+      display:flex;align-items:center;gap:10px;
+      padding:6px 12px 6px 6px;border:1px solid var(--border);
+      border-radius:var(--radius-sm);background:transparent;
+      transition:all var(--transition);
+    }
+    .user-btn:hover{background:var(--bg);border-color:var(--accent-subtle)}
+    .user-avatar{
+      width:32px;height:32px;border-radius:6px;
+      background:var(--accent);color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      font-size:12px;font-weight:700;
+    }
+    .user-info{text-align:left;display:flex;flex-direction:column}
+    .user-name{font-size:13px;font-weight:600;color:var(--fg);line-height:1.2}
+    .user-role{font-size:11px;color:var(--fg-muted);line-height:1.2}
+    @media(max-width:600px){.user-info{display:none}}
+
+    /* Profile dropdown */
+    .dropdown{
+      position:absolute;top:calc(100% + 8px);right:0;
+      width:220px;background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:var(--radius-md);box-shadow:var(--shadow-lg);
+      z-index:200;padding:6px;
+      opacity:0;visibility:hidden;transform:translateY(-8px);
+      transition:all 0.2s ease;
+    }
+    .dropdown.open{opacity:1;visibility:visible;transform:translateY(0)}
+    .dropdown-header{padding:12px;border-bottom:1px solid var(--border);margin-bottom:4px}
+    .dropdown-header .name{font-size:13px;font-weight:600;color:var(--fg)}
+    .dropdown-header .email{font-size:11px;color:var(--fg-muted);margin-top:2px}
+    .dropdown-item{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px;font-size:13px;color:var(--fg-secondary);
+      border-radius:var(--radius-sm);border:none;background:none;width:100%;
+      transition:all var(--transition);
+    }
+    .dropdown-item:hover{background:var(--bg);color:var(--fg)}
+    .dropdown-item svg{width:16px;height:16px;flex-shrink:0}
+    .dropdown-item.danger{color:var(--error)}
+    .dropdown-item.danger:hover{background:var(--error-bg)}
+
+    /* ================================================================
+       SIDEBAR
+       ================================================================ */
+    .sidebar{
+      grid-area:sidebar;
+      display:flex;flex-direction:column;
+      padding:12px 8px;gap:4px;
+      background:var(--bg-secondary);border-right:1px solid var(--border);
+      overflow-y:auto;overflow-x:hidden;
+    }
+    .sidebar-spacer{flex:1}
+
+    @media(max-width:1023px){
+      .sidebar{
+        position:fixed;top:var(--header-h);left:0;bottom:0;
+        width:var(--sidebar-w-mob);z-index:150;
+        transform:translateX(-100%);transition:transform 0.3s ease;
+        box-shadow:none;padding:16px 12px;
+      }
+      .sidebar.open{transform:translateX(0);box-shadow:var(--shadow-xl)}
+    }
+
+    /* Mobile overlay */
+    .sidebar-overlay{
+      display:none;position:fixed;inset:0;top:var(--header-h);
+      background:rgba(0,0,0,0.3);z-index:140;
+      opacity:0;transition:opacity 0.3s ease;
+    }
+    .sidebar-overlay.visible{display:block;opacity:1}
+
+    /* Nav button */
+    .nav-btn{
+      width:100%;height:56px;
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      border:1px solid transparent;border-radius:var(--radius-sm);
+      background:transparent;color:var(--fg-muted);
+      transition:all var(--transition);position:relative;
+    }
+    .nav-btn svg{width:22px;height:22px;flex-shrink:0}
+    .nav-btn span{display:none;font-size:13px;font-weight:500}
+    .nav-btn:hover{background:var(--bg);color:var(--fg-secondary)}
+    .nav-btn.active{background:var(--bg);color:var(--fg);border-color:var(--border)}
+
+    @media(max-width:1023px){
+      .nav-btn{
+        height:auto;padding:12px 16px;justify-content:flex-start;
+      }
+      .nav-btn span{display:block}
+    }
+
+    /* ================================================================
+       CONTENT AREA
+       ================================================================ */
+    .content-area{
+      grid-area:content;
+      overflow:hidden;
+      padding:16px;
+      display:flex;flex-direction:column;
+    }
+    @media(max-width:600px){.content-area{padding:8px}}
+
+    .content-card{
+      flex:1;background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
+      overflow:hidden;position:relative;
+    }
+
+    #pageContent{
+      height:100%;overflow:hidden;
+      display:flex;flex-direction:column;
+    }
+
+    .page-loader{
+      display:flex;align-items:center;justify-content:center;
+      height:100%;gap:12px;color:var(--fg-muted);font-size:13px;
+    }
+    .page-loader .spinner{
+      width:20px;height:20px;
+      border:2px solid var(--border);border-top-color:var(--accent);
+      border-radius:50%;animation:spin 0.7s linear infinite;
+    }
+
+    /* ================================================================
+       PASSWORD CHANGE MODAL
+       ================================================================ */
+    .modal-overlay{
+      position:fixed;inset:0;z-index:2000;
+      background:rgba(0,0,0,0.4);backdrop-filter:blur(6px);
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;visibility:hidden;transition:all 0.3s ease;
+    }
+    .modal-overlay.visible{opacity:1;visibility:visible}
+    .modal-box{
+      background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:var(--radius-xl);width:420px;max-width:calc(100vw - 32px);
+      padding:32px;box-shadow:var(--shadow-xl);
+      transform:scale(0.95);transition:transform 0.3s ease;
+    }
+    .modal-overlay.visible .modal-box{transform:scale(1)}
+    .modal-title{font-size:18px;font-weight:700;margin-bottom:6px}
+    .modal-desc{font-size:13px;color:var(--fg-muted);margin-bottom:24px;line-height:1.5}
+
+    /* ================================================================
+       TOAST NOTIFICATIONS
+       ================================================================ */
+    #toastContainer{
+      position:fixed;bottom:20px;right:20px;z-index:9999;
+      display:flex;flex-direction:column;gap:8px;
+      pointer-events:none;max-width:360px;
+    }
+    @media(max-width:480px){#toastContainer{right:12px;left:12px;max-width:none}}
+
+    .toast{
+      display:flex;align-items:center;gap:10px;
+      padding:14px 18px;border-radius:var(--radius-md);
+      font-size:13px;font-weight:500;
+      background:var(--bg-secondary);border:1px solid var(--border);
+      box-shadow:var(--shadow-lg);pointer-events:auto;
+      animation:slideInRight 0.3s ease both;
+      transition:opacity 0.3s ease,transform 0.3s ease;
+    }
+    .toast.out{opacity:0;transform:translateX(20px)}
+    .toast svg{width:18px;height:18px;flex-shrink:0}
+    .toast.success{border-color:rgba(5,150,105,0.2);color:var(--success)}
+    .toast.error{border-color:rgba(220,38,38,0.2);color:var(--error)}
+    .toast.warning{border-color:rgba(217,119,6,0.2);color:var(--warning)}
+    .toast.info{border-color:rgba(37,99,235,0.2);color:var(--info)}
+
+    /* ================================================================
+       NOTIFICATION PANEL
+       ================================================================ */
+    .notif-panel{
+      position:absolute;top:calc(100% + 8px);right:0;
+      width:360px;max-height:480px;
+      background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:var(--radius-md);box-shadow:var(--shadow-lg);
+      z-index:200;display:flex;flex-direction:column;
+      opacity:0;visibility:hidden;transform:translateY(-8px);
+      transition:all 0.2s ease;
+    }
+    .notif-panel.open{opacity:1;visibility:visible;transform:translateY(0)}
+    @media(max-width:480px){.notif-panel{width:calc(100vw - 24px);right:-50px}}
+
+    .notif-panel-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:16px;border-bottom:1px solid var(--border);
+    }
+    .notif-panel-header h3{font-size:14px;font-weight:700}
+    .notif-mark-read{
+      font-size:12px;color:var(--accent);background:none;border:none;
+      font-weight:600;transition:opacity var(--transition);
+    }
+    .notif-mark-read:hover{opacity:0.7}
+
+    .notif-list{flex:1;overflow-y:auto;padding:8px}
+    .notif-item{
+      display:flex;gap:12px;padding:12px;border-radius:var(--radius-sm);
+      cursor:pointer;transition:background var(--transition);
+    }
+    .notif-item:hover{background:var(--bg)}
+    .notif-item.unread{background:var(--accent-subtle)}
+    .notif-item.unread:hover{background:rgba(17,24,39,0.08)}
+    .notif-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px}
+    .notif-item:not(.unread) .notif-dot{background:transparent}
+    .notif-body{flex:1;min-width:0}
+    .notif-title{font-size:13px;font-weight:600;color:var(--fg);margin-bottom:2px}
+    .notif-msg{font-size:12px;color:var(--fg-secondary);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .notif-time{font-size:11px;color:var(--fg-muted);margin-top:4px}
+    .notif-empty{text-align:center;padding:40px 20px;color:var(--fg-muted);font-size:13px}
+  </style>
+</head>
+<body>
+
+  <div class="bg-pattern"></div>
+
+  <!-- ============================================================
+       AUTH SCREEN
+       ============================================================ -->
+  <div id="authScreen">
+    <div class="scan-line"></div>
+
+    <div class="auth-wrapper">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h1>АртЗапуск</h1>
+        <p>CRM управления отзывами</p>
+      </div>
+
+      <div class="auth-card">
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div>
+        <div class="corner corner-br"></div>
+
+        <!-- Tabs: Login / Register -->
+        <div class="tab-group">
+          <input type="radio" name="authTab" id="tabLogin" checked>
+          <label for="tabLogin">Вход</label>
+          <input type="radio" name="authTab" id="tabRegister">
+          <label for="tabRegister">Регистрация</label>
+        </div>
+
+        <!-- Role sub-tabs (register only) -->
+        <div class="sub-tabs" id="subTabs">
+          <input type="radio" name="roleTab" id="roleAuthor" checked>
+          <label for="roleAuthor">Автор</label>
+          <input type="radio" name="roleTab" id="roleManager">
+          <label for="roleManager">Менеджер</label>
+        </div>
+
+        <!-- Auth views container -->
+        <div class="auth-views">
+
+          <!-- LOGIN FORM -->
+          <form class="auth-view" id="loginView">
+            <div class="field">
+              <input type="text" class="field-input" id="loginEmail" placeholder=" " autocomplete="username">
+              <label class="field-label" for="loginEmail">Email или телефон</label>
+            </div>
+            <div class="field">
+              <input type="password" class="field-input" id="loginPassword" placeholder=" " autocomplete="current-password">
+              <label class="field-label" for="loginPassword">Пароль</label>
+            </div>
+            <div class="banner error" id="loginBanner">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span id="loginBannerText"></span>
+            </div>
+            <button type="submit" class="btn-primary" id="loginBtn">
+              <span class="btn-label">Войти</span>
+              <div class="spinner"></div>
+            </button>
+          </form>
+
+          <!-- REGISTER FORM -->
+          <form class="auth-view is-hidden" id="registerView">
+            <div class="field-row">
+              <div class="field">
+                <input type="text" class="field-input" id="regLastName" placeholder=" ">
+                <label class="field-label" for="regLastName">Фамилия</label>
+              </div>
+              <div class="field">
+                <input type="text" class="field-input" id="regFirstName" placeholder=" ">
+                <label class="field-label" for="regFirstName">Имя</label>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <input type="text" class="field-input" id="regMiddleName" placeholder=" ">
+                <label class="field-label" for="regMiddleName">Отчество</label>
+              </div>
+              <div class="field">
+                <input type="text" class="field-input" id="regCity" placeholder=" ">
+                <label class="field-label" for="regCity">Город</label>
+              </div>
+            </div>
+            <div class="field">
+              <input type="tel" class="field-input" id="regPhone" placeholder=" " maxlength="18">
+              <label class="field-label" for="regPhone">Телефон</label>
+            </div>
+            <div class="field">
+              <input type="email" class="field-input" id="regEmail" placeholder=" " autocomplete="username">
+              <label class="field-label" for="regEmail">Email (логин)</label>
+            </div>
+            <div class="field">
+              <input type="password" class="field-input" id="regPassword" placeholder=" " autocomplete="new-password">
+              <label class="field-label" for="regPassword">Пароль</label>
+            </div>
+            <div class="banner success" id="registerBanner">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Регистрация завершена. Ожидайте подтверждения администратором.</span>
+            </div>
+            <button type="submit" class="btn-primary" id="registerBtn">
+              <span class="btn-label">Зарегистрироваться</span>
+              <div class="spinner"></div>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="auth-footer">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          Защищённое соединение
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       APP SHELL
+       ============================================================ -->
+  <div id="appShell">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-left">
+        <button class="hamburger" id="hamburgerBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <span class="logo-text">АртЗапуск</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Notifications -->
+        <div style="position:relative">
+          <button class="notif-btn" id="notifBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <span class="notif-badge hidden" id="notifBadge">0</span>
+          </button>
+
+          <!-- Notification Panel -->
+          <div class="notif-panel" id="notifPanel">
+            <div class="notif-panel-header">
+              <h3>Уведомления</h3>
+              <button class="notif-mark-read" id="markAllReadBtn">Прочитать все</button>
+            </div>
+            <div class="notif-list" id="notifList">
+              <div class="notif-empty">Нет уведомлений</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User -->
+        <div style="position:relative">
+          <button class="user-btn" id="userBtn">
+            <div class="user-avatar" id="headerAvatar">АП</div>
+            <div class="user-info">
+              <div class="user-name" id="headerName">Пользователь</div>
+              <div class="user-role" id="headerRole">Роль</div>
+            </div>
+          </button>
+
+          <!-- Dropdown -->
+          <div class="dropdown" id="userDropdown">
+            <div class="dropdown-header">
+              <div class="name" id="dropdownName">Пользователь</div>
+              <div class="email" id="dropdownEmail">email@example.com</div>
+            </div>
+            <button class="dropdown-item" data-page="settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+              Настройки
+            </button>
+            <button class="dropdown-item danger" id="logoutBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              Выйти
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div id="navItems"></div>
+      <div class="sidebar-spacer"></div>
+      <div id="navBottom"></div>
+    </nav>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- CONTENT -->
+    <main class="content-area">
+      <div class="content-card">
+        <div id="pageContent">
+          <div class="page-loader"><div class="spinner"></div><span>Загрузка...</span></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================================
+       PASSWORD CHANGE MODAL
+       ============================================================ -->
+  <div class="modal-overlay" id="pwdChangeModal">
+    <div class="modal-box">
+      <div class="modal-title">Смена пароля</div>
+      <div class="modal-desc">Для безопасности необходимо установить новый пароль при первом входе.</div>
+      <form id="pwdChangeForm">
+        <div class="field">
+          <input type="password" class="field-input" id="newPwd" placeholder=" " autocomplete="new-password">
+          <label class="field-label" for="newPwd">Новый пароль</label>
+        </div>
+        <div class="field">
+          <input type="password" class="field-input" id="confirmPwd" placeholder=" ">
+          <label class="field-label" for="confirmPwd">Подтверждение пароля</label>
+        </div>
+        <div class="banner error" id="pwdBanner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="pwdBannerText"></span>
+        </div>
+        <button type="submit" class="btn-primary" id="pwdChangeBtn">
+          <span class="btn-label">Сохранить пароль</span>
+          <div class="spinner"></div>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer"></div>
+
+
+  <!-- ============================================================
+       JAVASCRIPT
+       ============================================================ -->
+  <script>
+  (function(){
+    'use strict';
+
+    /* =============================================================
+       CONFIG
+       ============================================================= */
+    const SUPABASE_URL  = 'https://ncdwlmgwljjwpuawlssr.supabase.co';
+    const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8';
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.supabaseClient = sb;
+    window.currentUser = null;
+
+    /* =============================================================
+       NAVIGATION MAP PER ROLE
+       ============================================================= */
+    const NAV_CONFIG = {
+      super_admin: [
+        { id:'dashboard',  icon:'dashboard',  label:'Дашборд',       file:'modal1.html' },
+        { id:'deals',      icon:'deals',      label:'Сделки',        file:'modal2.html' },
+        { id:'reviews',    icon:'reviews',    label:'Отзывы',        file:'modal3.html' },
+        { id:'users',      icon:'users',      label:'Пользователи',  file:'modal4.html' },
+        { id:'analytics',  icon:'analytics',  label:'Аналитика',     file:'modal5.html' },
+        { id:'settings',   icon:'settings',   label:'Настройки',     file:'modal6.html', bottom:true },
+      ],
+      manager: [
+        { id:'dashboard',  icon:'dashboard',  label:'Дашборд',       file:'modal1.html' },
+        { id:'deals',      icon:'deals',      label:'Мои сделки',    file:'modal2.html' },
+        { id:'reviews',    icon:'reviews',    label:'Задания',       file:'modal3.html' },
+        { id:'settings',   icon:'settings',   label:'Настройки',     file:'modal6.html', bottom:true },
+      ],
+      client: [
+        { id:'deals',      icon:'deals',      label:'Мои сделки',    file:'modal2.html' },
+        { id:'status',     icon:'status',     label:'Статус задач',  file:'modal3.html' },
+        { id:'settings',   icon:'settings',   label:'Настройки',     file:'modal6.html', bottom:true },
+      ],
+      author: [
+        { id:'board',      icon:'board',      label:'Доступные',     file:'modal1.html' },
+        { id:'mytasks',    icon:'mytasks',    label:'Мои задания',   file:'modal2.html' },
+        { id:'results',    icon:'analytics',  label:'Результаты',    file:'modal3.html' },
+        { id:'settings',   icon:'settings',   label:'Настройки',     file:'modal6.html', bottom:true },
+      ],
+    };
+
+    const ICONS = {
+      dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+      deals:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>',
+      reviews:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>',
+      users:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75"/></svg>',
+      analytics: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>',
+      settings:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>',
+      board:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg>',
+      mytasks:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>',
+      status:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+    };
+
+    const ROLE_LABELS = { super_admin:'Администратор', manager:'Менеджер', client:'Клиент', author:'Автор' };
+
+    /* =============================================================
+       STATE
+       ============================================================= */
+    let currentPage = null;
+    let realtimeChannel = null;
+
+    /* =============================================================
+       DOM REFS
+       ============================================================= */
+    const $ = id => document.getElementById(id);
+
+    const authScreen      = $('authScreen');
+    const appShell        = $('appShell');
+    const tabLogin        = $('tabLogin');
+    const tabRegister     = $('tabRegister');
+    const loginView       = $('loginView');
+    const registerView    = $('registerView');
+    const subTabs         = $('subTabs');
+    const loginBanner     = $('loginBanner');
+    const registerBanner  = $('registerBanner');
+    const pageContent     = $('pageContent');
+    const sidebar         = $('sidebar');
+    const sidebarOverlay  = $('sidebarOverlay');
+    const notifPanel      = $('notifPanel');
+    const userDropdown    = $('userDropdown');
+
+    /* =============================================================
+       TOAST
+       ============================================================= */
+    window.showToast = function(message, type='info') {
+      const icons = {
+        success:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+        error:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+        warning:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+      };
+      const el = document.createElement('div');
+      el.className = 'toast ' + type;
+      el.innerHTML = (icons[type]||icons.info) + '<span>' + message + '</span>';
+      $('toastContainer').appendChild(el);
+      setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, 4000);
+    };
+
+    /* =============================================================
+       LOGGER (action_logs)
+       ============================================================= */
+    window.logAction = async function(actionType, entityType, entityId, details={}) {
+      try {
+        const u = window.currentUser;
+        await sb.from('action_logs').insert({
+          user_id: u ? u.id : null,
+          user_role: u ? u.role : null,
+          action_type: actionType,
+          entity_type: entityType,
+          entity_id: entityId || null,
+          details: details,
+          user_agent: navigator.userAgent,
+        });
+      } catch(e) { console.warn('Log error:', e); }
+    };
+
+    /* =============================================================
+       AUTH TABS
+       ============================================================= */
+    tabLogin.addEventListener('change', () => {
+      if (!tabLogin.checked) return;
+      loginView.classList.remove('is-hidden','slide-left');
+      registerView.classList.add('is-hidden');
+      registerView.classList.remove('slide-left');
+      subTabs.classList.remove('visible');
+      hideBanner(loginBanner); hideBanner(registerBanner);
+    });
+
+    tabRegister.addEventListener('change', () => {
+      if (!tabRegister.checked) return;
+      registerView.classList.remove('is-hidden');
+      loginView.classList.add('is-hidden','slide-left');
+      subTabs.classList.add('visible');
+      hideBanner(loginBanner); hideBanner(registerBanner);
+    });
+
+    /* =============================================================
+       PHONE MASK
+       ============================================================= */
+    $('regPhone').addEventListener('input', function(e) {
+      let v = e.target.value.replace(/\D/g,'');
+      if (v.length > 0) {
+        if (v[0]==='8'||v[0]==='7') v=v.substring(1);
+        let f='+7';
+        if(v.length>0) f+=' ('+v.substring(0,3);
+        if(v.length>3) f+=') '+v.substring(3,6);
+        if(v.length>6) f+='-'+v.substring(6,8);
+        if(v.length>8) f+='-'+v.substring(8,10);
+        e.target.value=f;
+      }
+    });
+
+    /* =============================================================
+       BANNER HELPERS
+       ============================================================= */
+    function showBanner(el, text) {
+      if (text) { const span = el.querySelector('span'); if(span) span.textContent = text; }
+      el.classList.add('visible');
+    }
+    function hideBanner(el) { el.classList.remove('visible'); }
+
+    /* =============================================================
+       BUTTON LOADING STATE
+       ============================================================= */
+    function btnLoad(btn, on) {
+      if (on) { btn.classList.add('loading'); btn.disabled = true; }
+      else    { btn.classList.remove('loading'); btn.disabled = false; }
+    }
+
+    /* =============================================================
+       LOGIN
+       ============================================================= */
+    loginView.addEventListener('submit', async e => {
+      e.preventDefault();
+      hideBanner(loginBanner);
+      const email = $('loginEmail').value.trim();
+      const pass  = $('loginPassword').value;
+      if (!email || !pass) return showBanner(loginBanner, 'Заполните все поля');
+
+      const btn = $('loginBtn');
+      btnLoad(btn, true);
+
+      try {
+        /* lookup by email or phone */
+        let { data: user, error } = await sb
+          .from('users').select('*').ilike('email', email).maybeSingle();
+        if (!user) {
+          const r2 = await sb.from('users').select('*').eq('phone', email).maybeSingle();
+          user = r2.data; error = r2.error;
+        }
+        if (error) throw error;
+        if (!user) return showBanner(loginBanner, 'Пользователь не найден');
+        if (user.password_hash !== pass) return showBanner(loginBanner, 'Неверный пароль');
+        if (user.status === 'pending') return showBanner(loginBanner, 'Аккаунт ожидает подтверждения');
+        if (user.status === 'blocked') return showBanner(loginBanner, 'Аккаунт заблокирован');
+
+        /* success */
+        window.currentUser = user;
+        await sb.from('users').update({ last_login: new Date().toISOString() }).eq('id', user.id);
+        logAction('user.login', 'user', user.id, { method:'email' });
+
+        /* check must_change_password */
+        if (user.must_change_password) {
+          showPasswordChangeModal();
+        } else {
+          enterApp();
+        }
+      } catch(err) {
+        showBanner(loginBanner, 'Ошибка: ' + (err.message||'Неизвестная ошибка'));
+      } finally {
+        btnLoad(btn, false);
+      }
+    });
+
+    /* =============================================================
+       REGISTER
+       ============================================================= */
+    registerView.addEventListener('submit', async e => {
+      e.preventDefault();
+      hideBanner(registerBanner);
+      const fields = {
+        last_name:   $('regLastName').value.trim(),
+        first_name:  $('regFirstName').value.trim(),
+        middle_name: $('regMiddleName').value.trim(),
+        city:        $('regCity').value.trim(),
+        phone:       $('regPhone').value.trim(),
+        email:       $('regEmail').value.trim(),
+        password_hash: $('regPassword').value,
+        role: $('roleAuthor').checked ? 'author' : 'manager',
+        status: 'pending',
+      };
+
+      if (!fields.last_name || !fields.first_name || !fields.email || !fields.password_hash) {
+        return showBanner(registerBanner, 'Заполните обязательные поля');
+      }
+
+      const btn = $('registerBtn');
+      btnLoad(btn, true);
+
+      try {
+        const { error } = await sb.from('users').insert([fields]);
+        if (error) {
+          if (error.code === '23505') throw new Error('Email уже зарегистрирован');
+          throw error;
+        }
+
+        registerBanner.classList.remove('error'); registerBanner.classList.add('success');
+        showBanner(registerBanner);
+        registerView.reset();
+
+        setTimeout(() => {
+          hideBanner(registerBanner);
+          tabLogin.checked = true;
+          tabLogin.dispatchEvent(new Event('change'));
+        }, 3000);
+      } catch(err) {
+        registerBanner.classList.remove('success'); registerBanner.classList.add('error');
+        showBanner(registerBanner, 'Ошибка: ' + err.message);
+      } finally {
+        btnLoad(btn, false);
+      }
+    });
+
+    /* =============================================================
+       PASSWORD CHANGE (first login for clients)
+       ============================================================= */
+    function showPasswordChangeModal() {
+      $('pwdChangeModal').classList.add('visible');
+    }
+
+    $('pwdChangeForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      hideBanner($('pwdBanner'));
+      const newPwd     = $('newPwd').value;
+      const confirmPwd = $('confirmPwd').value;
+
+      if (newPwd.length < 6) return showBanner($('pwdBanner'), 'Минимум 6 символов');
+      if (newPwd !== confirmPwd) return showBanner($('pwdBanner'), 'Пароли не совпадают');
+
+      const btn = $('pwdChangeBtn');
+      btnLoad(btn, true);
+
+      try {
+        const { error } = await sb.from('users')
+          .update({ password_hash: newPwd, must_change_password: false })
+          .eq('id', window.currentUser.id);
+        if (error) throw error;
+
+        window.currentUser.must_change_password = false;
+        $('pwdChangeModal').classList.remove('visible');
+        logAction('user.password_change', 'user', window.currentUser.id);
+        showToast('Пароль успешно изменён', 'success');
+        enterApp();
+      } catch(err) {
+        showBanner($('pwdBanner'), 'Ошибка: ' + err.message);
+      } finally {
+        btnLoad(btn, false);
+      }
+    });
+
+    /* =============================================================
+       ENTER APP
+       ============================================================= */
+    function enterApp() {
+      authScreen.classList.add('out');
+      appShell.classList.add('active');
+      updateHeaderUI();
+      buildNavigation();
+      loadNotifications();
+      setupRealtime();
+
+      /* load first page */
+      const nav = getNavItems();
+      if (nav.length > 0) navigateTo(nav[0].id);
+    }
+
+    /* =============================================================
+       LOGOUT
+       ============================================================= */
+    function logout() {
+      logAction('user.logout', 'user', window.currentUser?.id);
+      window.currentUser = null;
+      currentPage = null;
+
+      if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+
+      appShell.classList.remove('active');
+      authScreen.classList.remove('out');
+      closeAllDropdowns();
+
+      loginView.reset();
+      registerView.reset();
+      tabLogin.checked = true;
+      tabLogin.dispatchEvent(new Event('change'));
+      hideBanner(loginBanner);
+      hideBanner(registerBanner);
+
+      pageContent.innerHTML = '<div class="page-loader"><div class="spinner"></div><span>Загрузка...</span></div>';
+    }
+
+    $('logoutBtn').addEventListener('click', logout);
+
+    /* =============================================================
+       HEADER UI
+       ============================================================= */
+    function updateHeaderUI() {
+      const u = window.currentUser;
+      if (!u) return;
+      const initials = ((u.first_name||'')[0]||'')+((u.last_name||'')[0]||'');
+      const fullName = (u.first_name||'')+' '+(u.last_name||'');
+      const roleLabel = ROLE_LABELS[u.role] || u.role;
+
+      $('headerAvatar').textContent = initials.toUpperCase()||'П';
+      $('headerName').textContent   = fullName.trim()||u.email;
+      $('headerRole').textContent   = roleLabel;
+      $('dropdownName').textContent = fullName.trim()||u.email;
+      $('dropdownEmail').textContent= u.email;
+    }
+
+    /* =============================================================
+       BUILD NAVIGATION
+       ============================================================= */
+    function getNavItems() {
+      const u = window.currentUser;
+      if (!u) return [];
+      return NAV_CONFIG[u.role] || [];
+    }
+
+    function buildNavigation() {
+      const items = getNavItems();
+      const main  = items.filter(i => !i.bottom);
+      const bottom= items.filter(i => i.bottom);
+
+      $('navItems').innerHTML  = main.map(i => navBtnHTML(i)).join('');
+      $('navBottom').innerHTML = bottom.map(i => navBtnHTML(i)).join('');
+
+      sidebar.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          navigateTo(btn.dataset.page);
+          closeSidebar();
+        });
+      });
+    }
+
+    function navBtnHTML(item) {
+      return `<button class="nav-btn" data-page="${item.id}" data-file="${item.file}" title="${item.label}">
+        ${ICONS[item.icon]||''}<span>${item.label}</span>
+      </button>`;
+    }
+
+    /* =============================================================
+       PAGE ROUTING
+       ============================================================= */
+    function navigateTo(pageId) {
+      const items = getNavItems();
+      const item = items.find(i => i.id === pageId);
+      if (!item) return;
+
+      currentPage = pageId;
+
+      /* highlight nav */
+      sidebar.querySelectorAll('.nav-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.page === pageId);
+      });
+
+      /* load fragment */
+      loadFragment(item.file);
+    }
+
+    async function loadFragment(file) {
+      pageContent.innerHTML = '<div class="page-loader"><div class="spinner"></div><span>Загрузка...</span></div>';
+
+      try {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error('Файл не найден: ' + file);
+        const html = await res.text();
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        pageContent.innerHTML = '';
+
+        Array.from(doc.body.childNodes).forEach(node => {
+          pageContent.appendChild(document.importNode(node, true));
+        });
+
+        /* execute scripts */
+        pageContent.querySelectorAll('script').forEach(oldScript => {
+          const newScript = document.createElement('script');
+          Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+          if (oldScript.src) newScript.src = oldScript.src;
+          else newScript.textContent = oldScript.textContent;
+          oldScript.replaceWith(newScript);
+        });
+      } catch(err) {
+        console.error(err);
+        pageContent.innerHTML = `<div class="page-loader" style="flex-direction:column;gap:8px">
+          <span style="font-size:14px;font-weight:600">Страница в разработке</span>
+          <span style="font-size:12px;color:var(--fg-muted)">${file}</span>
+        </div>`;
+      }
+    }
+
+    /* settings page from dropdown */
+    document.querySelectorAll('[data-page="settings"]').forEach(el => {
+      el.addEventListener('click', () => {
+        navigateTo('settings');
+        closeAllDropdowns();
+        closeSidebar();
+      });
+    });
+
+    /* =============================================================
+       NOTIFICATIONS
+       ============================================================= */
+    async function loadNotifications() {
+      const u = window.currentUser;
+      if (!u) return;
+
+      try {
+        const { data, error } = await sb.from('notifications')
+          .select('*')
+          .eq('user_id', u.id)
+          .order('created_at', { ascending: false })
+          .limit(30);
+
+        if (error) throw error;
+        renderNotifications(data || []);
+      } catch(e) { console.warn('Notif load error:', e); }
+    }
+
+    function renderNotifications(items) {
+      const list = $('notifList');
+      const badge = $('notifBadge');
+      const unreadCount = items.filter(n => !n.is_read).length;
+
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      if (items.length === 0) {
+        list.innerHTML = '<div class="notif-empty">Нет уведомлений</div>';
+        return;
+      }
+
+      list.innerHTML = items.map(n => {
+        const ago = timeAgo(n.created_at);
+        return `<div class="notif-item ${n.is_read?'':'unread'}" data-id="${n.id}">
+          <div class="notif-dot"></div>
+          <div class="notif-body">
+            <div class="notif-title">${escapeHtml(n.title)}</div>
+            <div class="notif-msg">${escapeHtml(n.message||'')}</div>
+            <div class="notif-time">${ago}</div>
+          </div>
+        </div>`;
+      }).join('');
+
+      list.querySelectorAll('.notif-item').forEach(el => {
+        el.addEventListener('click', async () => {
+          const id = el.dataset.id;
+          if (el.classList.contains('unread')) {
+            await sb.from('notifications').update({ is_read: true }).eq('id', id);
+            el.classList.remove('unread');
+            loadNotifications();
+          }
+        });
+      });
+    }
+
+    $('markAllReadBtn').addEventListener('click', async () => {
+      const u = window.currentUser;
+      if (!u) return;
+      await sb.from('notifications').update({ is_read: true }).eq('user_id', u.id).eq('is_read', false);
+      loadNotifications();
+    });
+
+    /* =============================================================
+       REALTIME
+       ============================================================= */
+    function setupRealtime() {
+      const u = window.currentUser;
+      if (!u) return;
+
+      realtimeChannel = sb.channel('app-realtime')
+        .on('postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${u.id}` },
+          payload => {
+            loadNotifications();
+            const n = payload.new;
+            if (n && n.title) showToast(n.title, 'info');
+          }
+        )
+        .subscribe();
+    }
+
+    /* =============================================================
+       HAMBURGER / SIDEBAR
+       ============================================================= */
+    $('hamburgerBtn').addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      sidebarOverlay.classList.toggle('visible', sidebar.classList.contains('open'));
+    });
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('visible');
+    }
+
+    /* =============================================================
+       DROPDOWNS (user, notifications)
+       ============================================================= */
+    $('userBtn').addEventListener('click', e => {
+      e.stopPropagation();
+      userDropdown.classList.toggle('open');
+      notifPanel.classList.remove('open');
+    });
+
+    $('notifBtn').addEventListener('click', e => {
+      e.stopPropagation();
+      notifPanel.classList.toggle('open');
+      userDropdown.classList.remove('open');
+    });
+
+    document.addEventListener('click', e => {
+      if (!userDropdown.contains(e.target) && !$('userBtn').contains(e.target)) {
+        userDropdown.classList.remove('open');
+      }
+      if (!notifPanel.contains(e.target) && !$('notifBtn').contains(e.target)) {
+        notifPanel.classList.remove('open');
+      }
+    });
+
+    function closeAllDropdowns() {
+      userDropdown.classList.remove('open');
+      notifPanel.classList.remove('open');
+    }
+
+    /* =============================================================
+       UTILS
+       ============================================================= */
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function timeAgo(isoStr) {
+      if (!isoStr) return '';
+      const diff = Date.now() - new Date(isoStr).getTime();
+      const mins = Math.floor(diff/60000);
+      if (mins < 1)   return 'только что';
+      if (mins < 60)  return mins + ' мин. назад';
+      const hrs = Math.floor(mins/60);
+      if (hrs < 24)   return hrs + ' ч. назад';
+      const days = Math.floor(hrs/24);
+      if (days < 7)   return days + ' дн. назад';
+      return new Date(isoStr).toLocaleDateString('ru-RU');
+    }
+
+    /* format date nicely */
+    window.formatDate = function(isoStr) {
+      if (!isoStr) return '—';
+      const d = new Date(isoStr);
+      return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'long', year:'numeric' }) +
+        ', ' + d.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+    };
+
+    /* format money */
+    window.formatMoney = function(num) {
+      return new Intl.NumberFormat('ru-RU').format(num || 0);
+    };
+
+    /* =============================================================
+       INIT — check saved session (simple localStorage)
+       ============================================================= */
+    (async function init() {
+      const savedId = localStorage.getItem('az_user_id');
+      if (savedId) {
+        try {
+          const { data, error } = await sb.from('users').select('*').eq('id', savedId).single();
+          if (!error && data && data.status === 'active') {
+            window.currentUser = data;
+            if (data.must_change_password) {
+              showPasswordChangeModal();
+            }
+            enterApp();
+            return;
+          }
+        } catch(e) { /* ignore, show login */ }
+        localStorage.removeItem('az_user_id');
+      }
+      /* show login */
+      authScreen.classList.remove('out');
+    })();
+
+    /* persist session on login */
+    const origEnterApp = enterApp;
+    enterApp = function() {
+      if (window.currentUser) {
+        localStorage.setItem('az_user_id', window.currentUser.id);
+      }
+      origEnterApp();
+    };
+
+    /* clear session on logout */
+    const origLogout = logout;
+    logout = function() {
+      localStorage.removeItem('az_user_id');
+      origLogout();
+    };
+
+    /* re-bind logout after reassignment */
+    $('logoutBtn').removeEventListener('click', origLogout);
+    $('logoutBtn').addEventListener('click', logout);
+
+  })();
+  </script>
+</body>
+</html>
