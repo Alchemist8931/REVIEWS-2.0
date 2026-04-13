@@ -1,0 +1,705 @@
+<!-- modal2.html — Сделки (admin/manager) | Мои сделки (client) | Мои задания (author) -->
+<div class="m-root" id="m2Root">
+<style>
+  .m-root{display:flex;flex-direction:column;height:100%;font-family:'SN Pro',sans-serif;overflow:hidden}
+  .m-header{display:flex;justify-content:space-between;align-items:center;height:52px;min-height:52px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg-secondary);gap:12px;flex-wrap:wrap}
+  .m-header-title{font-size:14px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;color:var(--fg)}
+  .m-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+
+  /* Create deal button */
+  .btn-create{padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;transition:all 0.2s;white-space:nowrap}
+  .btn-create:hover{background:var(--accent-hover);transform:translateY(-1px)}
+  .btn-create svg{width:16px;height:16px}
+
+  /* Deal card */
+  .deal-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;gap:14px;transition:box-shadow 0.2s}
+  .deal-card:hover{box-shadow:var(--shadow-md)}
+  .dc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .dc-info{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+  .dc-id{font-size:11px;font-weight:700;color:var(--fg-muted);padding:2px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;display:inline-block;width:fit-content}
+  .dc-company{font-size:15px;font-weight:600;color:var(--fg);margin-top:4px}
+  .dc-meta{font-size:12px;color:var(--fg-secondary);display:flex;gap:16px;flex-wrap:wrap;margin-top:2px}
+  .dc-sum{font-size:24px;font-weight:700;color:var(--fg);white-space:nowrap}
+
+  /* Status chip */
+  .status-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em}
+  .chip-brief{background:var(--info-bg);color:var(--info)}
+  .chip-approval{background:var(--warning-bg);color:var(--warning)}
+  .chip-work{background:rgba(139,92,246,0.08);color:#7C3AED}
+  .chip-done{background:var(--success-bg);color:var(--success)}
+  .chip-cancel{background:var(--bg);color:var(--fg-muted)}
+
+  /* Timeline */
+  .timeline{display:flex;gap:6px;margin-top:4px}
+  .tl-bar{flex:1;height:6px;background:var(--border);border-radius:99px;transition:background 0.3s}
+  .tl-bar.active{background:var(--accent)}.tl-bar.done{background:var(--success)}
+  .tl-labels{display:flex;gap:6px;margin-top:4px}
+  .tl-label{flex:1;font-size:10px;color:var(--fg-muted);text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+  .tl-label.active{color:var(--fg);font-weight:600}
+
+  /* Action buttons row */
+  .dc-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px dashed var(--border)}
+  .dc-btn{padding:7px 16px;font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-secondary);color:var(--fg-secondary);cursor:pointer;transition:all 0.2s}
+  .dc-btn:hover{border-color:var(--accent);color:var(--fg)}
+  .dc-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .dc-btn.primary:hover{background:var(--accent-hover)}
+  .dc-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+  /* Footer info */
+  .dc-footer{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--fg-muted);flex-wrap:wrap;gap:8px}
+
+  /* Modal overlay */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all 0.3s}
+  .modal-bg.open{opacity:1;visibility:visible}
+  .modal{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-xl);width:640px;max-width:calc(100vw - 24px);max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-xl);transform:scale(0.96);transition:transform 0.3s}
+  .modal-bg.open .modal{transform:scale(1)}
+  .modal.wide{width:900px}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border)}
+  .modal-head h3{font-size:16px;font-weight:700}
+  .modal-close{background:none;border:none;font-size:22px;color:var(--fg-muted);cursor:pointer;padding:4px}
+  .modal-close:hover{color:var(--fg)}
+  .modal-body{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+  .modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+  /* Form */
+  .form-section{font-size:11px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:500px){.form-grid{grid-template-columns:1fr}}
+  .form-grid .span2{grid-column:span 2}
+  @media(max-width:500px){.form-grid .span2{grid-column:span 1}}
+
+  .fg{position:relative}
+  .fg input,.fg textarea,.fg select{width:100%;padding:12px 14px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg);outline:none;font-family:inherit;transition:border-color 0.2s}
+  .fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--accent)}
+  .fg label{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--fg-muted);pointer-events:none;transition:all 0.2s;padding:0 4px;background:transparent}
+  .fg input:focus~label,.fg input:not(:placeholder-shown)~label,.fg select~label,.fg textarea:focus~label,.fg textarea:not(:placeholder-shown)~label{top:0;font-size:10px;font-weight:500;color:var(--accent);background:var(--bg-secondary)}
+  .fg textarea{resize:none;min-height:70px}
+
+  /* Dropdown for autocomplete */
+  .ac-drop{position:absolute;top:100%;left:0;right:0;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:4px;box-shadow:var(--shadow-lg);z-index:10;max-height:180px;overflow-y:auto;display:none}
+  .ac-drop.open{display:block}
+  .ac-item{padding:10px 14px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border-light)}
+  .ac-item:last-child{border-bottom:none}
+  .ac-item:hover{background:var(--bg)}
+
+  /* Review creation window */
+  .review-cols{display:flex;gap:14px;flex:1;min-height:200px}
+  @media(max-width:700px){.review-cols{flex-direction:column}}
+  .review-col{flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+  .rc-header{padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--fg-muted);border-bottom:1px solid var(--border);background:var(--bg-secondary)}
+  .rc-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+  .rv-item{background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:12px;color:var(--fg-secondary);line-height:1.5;display:flex;flex-direction:column;gap:6px}
+  .rv-item .rv-actions{display:flex;justify-content:flex-end;gap:6px}
+  .rv-chip{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px}
+  .rv-chip.draft{background:var(--bg);color:var(--fg-muted)}
+  .rv-chip.pending{background:var(--warning-bg);color:var(--warning)}
+  .rv-chip.approved{background:var(--success-bg);color:var(--success)}
+  .rv-chip.edited{background:var(--info-bg);color:var(--info)}
+
+  /* Brief form */
+  .brief-section{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+  .brief-section:last-child{border-bottom:none}
+  .brief-section h4{font-size:14px;font-weight:600;margin-bottom:12px}
+  .brief-q{margin-bottom:12px}
+  .brief-q label{display:block;font-size:12px;font-weight:500;color:var(--fg-secondary);margin-bottom:6px}
+  .brief-q textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;resize:vertical;min-height:60px;background:var(--bg-secondary)}
+  .brief-q textarea:focus{border-color:var(--accent);outline:none}
+  .cb-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-width:500px){.cb-group{grid-template-columns:1fr}}
+  .cb-label{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer}
+
+  .empty{text-align:center;padding:40px 20px;color:var(--fg-muted);font-size:13px}
+</style>
+
+<header class="m-header">
+  <div class="m-header-title" id="m2Title">Загрузка...</div>
+  <div id="m2HeaderActions"></div>
+</header>
+
+<div class="m-body" id="m2Body">
+  <div class="empty">Загрузка...</div>
+</div>
+
+<!-- CREATE DEAL MODAL -->
+<div class="modal-bg" id="dealModal">
+  <div class="modal">
+    <div class="modal-head"><h3>Новая сделка</h3><button class="modal-close" onclick="closeDealModal()">&times;</button></div>
+    <div class="modal-body">
+      <div>
+        <div class="form-section">Контрагент</div>
+        <div class="form-grid">
+          <div class="fg" style="position:relative"><input id="dInn" placeholder=" " autocomplete="off"><label>ИНН</label><div class="ac-drop" id="innDrop"></div></div>
+          <div class="fg"><input id="dOpf" placeholder=" "><label>ОПФ</label></div>
+          <div class="fg span2"><input id="dCompany" placeholder=" "><label>Наименование</label></div>
+        </div>
+      </div>
+      <div>
+        <div class="form-section">Клиент</div>
+        <div class="form-grid">
+          <div class="fg span2" style="position:relative"><input id="dLname" placeholder=" " autocomplete="off"><label>Фамилия</label><div class="ac-drop" id="clientDrop"></div></div>
+          <div class="fg"><input id="dFname" placeholder=" "><label>Имя</label></div>
+          <div class="fg"><input id="dMname" placeholder=" "><label>Отчество</label></div>
+          <div class="fg"><input id="dPhone" placeholder=" "><label>Телефон</label></div>
+          <div class="fg"><input id="dEmail" placeholder=" " type="email"><label>Email</label></div>
+        </div>
+      </div>
+      <div>
+        <div class="form-section">Договор</div>
+        <div class="form-grid">
+          <div class="fg"><input id="dContractNum" placeholder=" "><label>Номер договора</label></div>
+          <div class="fg"><input id="dContractDate" type="date" placeholder=" " style="padding-top:14px"><label style="top:0;font-size:10px;background:var(--bg-secondary)">Дата договора</label></div>
+          <div class="fg"><input id="dSum" placeholder=" " type="number"><label>Сумма</label></div>
+          <div class="fg"><input id="dHelp" placeholder=" "><label>Комментарий</label></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="dc-btn" onclick="closeDealModal()">Отмена</button>
+      <button class="dc-btn primary" id="submitDealBtn" onclick="submitDeal()">Создать сделку</button>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEW CREATION MODAL -->
+<div class="modal-bg" id="reviewModal">
+  <div class="modal wide">
+    <div class="modal-head"><h3>Отзывы по сделке</h3><button class="modal-close" onclick="closeReviewModal()">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg span2"><input id="rLink" placeholder=" "><label>Ссылка на площадку</label></div>
+        <div class="fg"><input id="rDeadline" type="date" placeholder=" " style="padding-top:14px"><label style="top:0;font-size:10px;background:var(--bg-secondary)">Дедлайн</label></div>
+      </div>
+      <div style="position:relative">
+        <textarea id="rText" style="width:100%;min-height:80px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;resize:none" placeholder="Текст отзыва..."></textarea>
+        <button class="dc-btn primary" style="position:absolute;top:8px;right:8px;padding:5px 12px;font-size:11px" onclick="addReviewDraft()">Добавить</button>
+      </div>
+      <div class="review-cols">
+        <div class="review-col"><div class="rc-header">Черновики</div><div class="rc-body" id="draftCol"></div></div>
+        <div class="review-col"><div class="rc-header">У клиента</div><div class="rc-body" id="clientCol"></div></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="dc-btn" id="sendApprovalBtn" onclick="sendForApproval()" style="display:none">Отправить на согласование</button>
+      <button class="dc-btn primary" id="sendToAuthorsBtn" onclick="sendToAuthors()" style="display:none">Передать авторам</button>
+    </div>
+  </div>
+</div>
+
+<!-- BRIEF MODAL -->
+<div class="modal-bg" id="briefModal">
+  <div class="modal wide">
+    <div class="modal-head"><h3>Бриф клиента</h3><button class="modal-close" onclick="closeBriefModal()">&times;</button></div>
+    <div class="modal-body" id="briefBody"></div>
+    <div class="modal-foot">
+      <button class="dc-btn primary" onclick="submitBrief()">Отправить бриф</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPROVAL MODAL (Client) -->
+<div class="modal-bg" id="approvalModal">
+  <div class="modal wide">
+    <div class="modal-head"><h3>Согласование отзывов</h3><button class="modal-close" onclick="closeApprovalModal()">&times;</button></div>
+    <div class="modal-body">
+      <div class="review-cols">
+        <div class="review-col"><div class="rc-header">На согласовании</div><div class="rc-body" id="pendingCol"></div></div>
+        <div class="review-col"><div class="rc-header">Согласовано</div><div class="rc-body" id="approvedCol"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const sb = window.supabaseClient;
+  const user = window.currentUser;
+  if(!sb||!user) return;
+
+  const title = document.getElementById('m2Title');
+  const body = document.getElementById('m2Body');
+  const actions = document.getElementById('m2HeaderActions');
+
+  let currentDealId = null;
+
+  if(user.role==='author'){
+    renderAuthorTasks();
+  } else {
+    renderDeals();
+  }
+
+  /* ===== STATUS HELPERS ===== */
+  const STATUS_MAP = {brief:'Бриф',brief_completed:'Бриф готов',review_creation:'Создание отзывов',approval:'Согласование',in_work:'В работе',completed:'Завершена',cancelled:'Отменена'};
+  const STAGES = ['brief','review_creation','approval','in_work','completed'];
+
+  function statusChip(s){
+    const cls = s==='completed'?'chip-done':['in_work'].includes(s)?'chip-work':['approval','pending_approval','review_creation','brief_completed'].includes(s)?'chip-approval':'chip-brief';
+    return `<span class="status-chip ${cls}">${STATUS_MAP[s]||s}</span>`;
+  }
+
+  function timelineHTML(status){
+    const idx = STAGES.indexOf(status);
+    const realIdx = status==='brief_completed'?1:idx;
+    return `<div class="timeline">${STAGES.map((_,i)=>`<div class="tl-bar ${i<realIdx?'done':i===realIdx?'active':''}"></div>`).join('')}</div>
+    <div class="tl-labels">${['Бриф','Отзывы','Согласование','В работе','Готово'].map((l,i)=>`<span class="tl-label ${i===realIdx?'active':''}">${l}</span>`).join('')}</div>`;
+  }
+
+  /* ===== DEALS LIST (admin/manager/client) ===== */
+  async function renderDeals(){
+    const isClient = user.role==='client';
+    const isAdmin = user.role==='super_admin';
+    title.textContent = isClient?'Мои сделки':'Сделки';
+
+    if(!isClient){
+      actions.innerHTML=`<button class="btn-create" onclick="openDealModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Создать сделку</button>`;
+    } else { actions.innerHTML=''; }
+
+    body.innerHTML='<div class="empty">Загрузка сделок...</div>';
+
+    try {
+      let q = sb.from('deals').select('*, clients:client_id(first_name,last_name,middle_name,user_id), counterparties:counterparty_id(name_company,opf,inn)').order('created_at',{ascending:false});
+
+      if(user.role==='manager') q=q.eq('manager_id',user.id);
+      if(isClient){
+        const {data:myClients} = await sb.from('clients').select('id').eq('user_id',user.id);
+        const cids = (myClients||[]).map(c=>c.id);
+        if(cids.length>0) q=q.in('client_id',cids);
+        else { body.innerHTML='<div class="empty">У вас пока нет сделок</div>'; return; }
+      }
+
+      const {data:deals,error} = await q;
+      if(error) throw error;
+      if(!deals||deals.length===0){ body.innerHTML='<div class="empty">Сделок пока нет</div>'; return; }
+
+      /* load review counts */
+      const dealIds = deals.map(d=>d.id);
+      const {data:revs} = await sb.from('reviews').select('id,deal_id,status').in('deal_id',dealIds);
+      const revMap={};
+      (revs||[]).forEach(r=>{if(!revMap[r.deal_id])revMap[r.deal_id]=[];revMap[r.deal_id].push(r);});
+
+      body.innerHTML='';
+      deals.forEach(d=>{
+        const el = document.createElement('div');
+        el.className='deal-card';
+        const c = d.clients;
+        const cp = d.counterparties;
+        const fio = c?`${c.last_name||''} ${c.first_name||''} ${c.middle_name||''}`.trim():'—';
+        const company = cp?`${cp.opf||''} ${cp.name_company||''}`.trim():'—';
+        const dRevs = revMap[d.id]||[];
+        const pendingCount = dRevs.filter(r=>r.status==='pending_approval').length;
+        const approvedCount = dRevs.filter(r=>['approved','client_edited'].includes(r.status)).length;
+
+        let actionsHTML = '';
+        if(isClient){
+          if(d.status==='brief'&&d.is_new_client) actionsHTML+=`<button class="dc-btn primary" onclick="openBriefModal('${d.id}')">Пройти бриф</button>`;
+          if(pendingCount>0) actionsHTML+=`<button class="dc-btn primary" onclick="openApprovalModal('${d.id}')">Согласовать (${pendingCount})</button>`;
+        } else {
+          if(['brief_completed','review_creation'].includes(d.status)||d.status==='approval'){
+            actionsHTML+=`<button class="dc-btn primary" onclick="openReviewModal('${d.id}')">Отзывы</button>`;
+          }
+          if(d.status==='brief'&&!d.is_new_client) actionsHTML+=`<button class="dc-btn primary" onclick="advanceDeal('${d.id}','review_creation')">К созданию отзывов</button>`;
+          if(d.status==='brief'&&d.brief_data) actionsHTML+=`<button class="dc-btn" onclick="advanceDeal('${d.id}','review_creation')">Бриф получен → далее</button>`;
+          if(approvedCount>0&&d.status==='approval') actionsHTML+=`<button class="dc-btn primary" onclick="publishForAuthors('${d.id}')">Передать авторам (${approvedCount})</button>`;
+        }
+
+        el.innerHTML=`
+          <div class="dc-top">
+            <div class="dc-info">
+              <div class="dc-id">#${d.deal_number} · ${d.contract_number||'б/н'}</div>
+              <div class="dc-company">${esc(company)}</div>
+              <div class="dc-meta">
+                <span>Клиент: ${esc(fio)}</span>
+                <span>ИНН: ${cp?.inn||'—'}</span>
+                <span>Дата: ${d.contract_date?new Date(d.contract_date).toLocaleDateString('ru-RU'):'—'}</span>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div class="dc-sum">${formatMoney(d.sum_deal)} ₽</div>
+              ${statusChip(d.status)}
+            </div>
+          </div>
+          ${timelineHTML(d.status)}
+          ${actionsHTML?`<div class="dc-actions">${actionsHTML}</div>`:''}
+          <div class="dc-footer">
+            <span>Создано: ${formatDate(d.created_at)}</span>
+            <span>Отзывов: ${dRevs.length}</span>
+          </div>
+        `;
+        body.appendChild(el);
+      });
+    }catch(e){body.innerHTML=`<div class="empty" style="color:var(--error)">Ошибка: ${e.message}</div>`;}
+  }
+
+  /* ===== CREATE DEAL MODAL ===== */
+  window.openDealModal = function(){ document.getElementById('dealModal').classList.add('open'); };
+  window.closeDealModal = function(){ document.getElementById('dealModal').classList.remove('open'); };
+
+  /* INN autocomplete */
+  let innTimer;
+  document.getElementById('dInn').addEventListener('input', e=>{
+    clearTimeout(innTimer);
+    const v=e.target.value;
+    if(v.length<2){document.getElementById('innDrop').classList.remove('open');return;}
+    innTimer=setTimeout(async()=>{
+      const {data}=await sb.from('counterparties').select('*').ilike('inn',`%${v}%`).limit(5);
+      const drop=document.getElementById('innDrop');
+      if(data&&data.length>0){
+        drop.innerHTML=data.map(c=>`<div class="ac-item" data-inn="${c.inn}" data-opf="${c.opf||''}" data-name="${c.name_company||''}">${c.inn} — ${c.name_company||''}</div>`).join('');
+        drop.classList.add('open');
+        drop.querySelectorAll('.ac-item').forEach(it=>it.onclick=()=>{
+          document.getElementById('dInn').value=it.dataset.inn;
+          document.getElementById('dOpf').value=it.dataset.opf;
+          document.getElementById('dCompany').value=it.dataset.name;
+          drop.classList.remove('open');
+        });
+      } else drop.classList.remove('open');
+    },300);
+  });
+
+  /* Client autocomplete */
+  let clTimer;
+  document.getElementById('dLname').addEventListener('input', e=>{
+    clearTimeout(clTimer);
+    const v=e.target.value;
+    if(v.length<2){document.getElementById('clientDrop').classList.remove('open');return;}
+    clTimer=setTimeout(async()=>{
+      const {data}=await sb.from('clients').select('*').ilike('last_name',`%${v}%`).limit(5);
+      const drop=document.getElementById('clientDrop');
+      if(data&&data.length>0){
+        drop.innerHTML=data.map(c=>`<div class="ac-item" data-fn="${c.first_name||''}" data-ln="${c.last_name||''}" data-mn="${c.middle_name||''}" data-ph="${c.phone||''}" data-em="${c.email||''}">${c.last_name} ${c.first_name} ${c.middle_name||''}</div>`).join('');
+        drop.classList.add('open');
+        drop.querySelectorAll('.ac-item').forEach(it=>it.onclick=()=>{
+          document.getElementById('dLname').value=it.dataset.ln;
+          document.getElementById('dFname').value=it.dataset.fn;
+          document.getElementById('dMname').value=it.dataset.mn;
+          document.getElementById('dPhone').value=it.dataset.ph;
+          document.getElementById('dEmail').value=it.dataset.em;
+          drop.classList.remove('open');
+        });
+      } else drop.classList.remove('open');
+    },300);
+  });
+
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('#dInn')&&!e.target.closest('#innDrop'))document.getElementById('innDrop').classList.remove('open');
+    if(!e.target.closest('#dLname')&&!e.target.closest('#clientDrop'))document.getElementById('clientDrop').classList.remove('open');
+  });
+
+  window.submitDeal = async function(){
+    const btn=document.getElementById('submitDealBtn');
+    btn.disabled=true; btn.textContent='Создание...';
+    try{
+      const inn=document.getElementById('dInn').value.trim();
+      const lname=document.getElementById('dLname').value.trim();
+      const fname=document.getElementById('dFname').value.trim();
+      const email=document.getElementById('dEmail').value.trim();
+      if(!inn) throw new Error('ИНН обязателен');
+      if(!lname||!fname) throw new Error('ФИО клиента обязательно');
+
+      /* counterparty */
+      let {data:cp}=await sb.from('counterparties').select('id').eq('inn',inn).maybeSingle();
+      if(!cp){
+        const {data:newCp,error:cpErr}=await sb.from('counterparties').insert({inn,opf:document.getElementById('dOpf').value.trim(),name_company:document.getElementById('dCompany').value.trim()}).select('id').single();
+        if(cpErr)throw cpErr; cp=newCp;
+      }
+
+      /* client */
+      let isNew=true;
+      let {data:cl}=await sb.from('clients').select('id,user_id').eq('last_name',lname).eq('first_name',fname).maybeSingle();
+      if(cl){isNew=false;await sb.from('clients').update({phone:document.getElementById('dPhone').value.trim(),email}).eq('id',cl.id);}
+      else{
+        /* create client user account */
+        const tempPass = Math.random().toString(36).slice(-8);
+        const {data:newUser,error:uErr}=await sb.from('users').insert({
+          email, password_hash:tempPass, role:'client', status:'active',
+          first_name:fname, last_name:lname,
+          middle_name:document.getElementById('dMname').value.trim(),
+          phone:document.getElementById('dPhone').value.trim(),
+          must_change_password:true
+        }).select('id').single();
+        if(uErr&&uErr.code!=='23505') throw uErr;
+        const userId = newUser?newUser.id:null;
+
+        const {data:newCl,error:clErr}=await sb.from('clients').insert({
+          user_id:userId, counterparty_id:cp.id,
+          first_name:fname, last_name:lname,
+          middle_name:document.getElementById('dMname').value.trim(),
+          phone:document.getElementById('dPhone').value.trim(), email
+        }).select('id').single();
+        if(clErr)throw clErr; cl=newCl;
+      }
+
+      const initialStatus = isNew?'brief':'review_creation';
+      const {error:dErr}=await sb.from('deals').insert({
+        manager_id:user.id, client_id:cl.id, counterparty_id:cp.id,
+        contract_number:document.getElementById('dContractNum').value.trim(),
+        contract_date:document.getElementById('dContractDate').value||null,
+        sum_deal:parseFloat(document.getElementById('dSum').value)||0,
+        help_text:document.getElementById('dHelp').value.trim(),
+        status:initialStatus, is_new_client:isNew
+      });
+      if(dErr) throw dErr;
+      logAction('deal.create','deal',null,{inn,client:lname+' '+fname});
+      showToast('Сделка создана','success');
+      closeDealModal();
+      renderDeals();
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+    finally{btn.disabled=false;btn.textContent='Создать сделку';}
+  };
+
+  /* ===== ADVANCE DEAL STATUS ===== */
+  window.advanceDeal = async function(id,newStatus){
+    try{
+      const {error}=await sb.from('deals').update({status:newStatus}).eq('id',id);
+      if(error) throw error;
+      logAction('deal.status_change','deal',id,{new_status:newStatus});
+      renderDeals();
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  /* ===== REVIEW MODAL (Manager creates reviews) ===== */
+  window.openReviewModal = async function(dealId){
+    currentDealId=dealId;
+    document.getElementById('reviewModal').classList.add('open');
+    document.getElementById('draftCol').innerHTML='';
+    document.getElementById('clientCol').innerHTML='';
+    document.getElementById('rText').value='';
+    await loadReviews(dealId);
+  };
+  window.closeReviewModal = function(){document.getElementById('reviewModal').classList.remove('open');};
+
+  async function loadReviews(dealId){
+    const {data}=await sb.from('reviews').select('*').eq('deal_id',dealId).order('created_at');
+    const draft=document.getElementById('draftCol');
+    const client=document.getElementById('clientCol');
+    draft.innerHTML='';client.innerHTML='';
+
+    (data||[]).forEach(r=>{
+      const chipCls = r.status==='draft'?'draft':r.status==='approved'?'approved':r.status==='client_edited'?'edited':'pending';
+      const chipText = r.status==='draft'?'Черновик':r.status==='approved'?'Согласован':r.status==='client_edited'?'Изменён клиентом':'На согласовании';
+      const html=`<div class="rv-item"><div style="flex:1">${esc(r.review_text)}</div><div class="rv-actions"><span class="rv-chip ${chipCls}">${chipText}</span></div></div>`;
+      if(['draft','approved','client_edited'].includes(r.status)) draft.innerHTML+=html;
+      else if(r.status==='pending_approval') client.innerHTML+=html;
+    });
+
+    const drafts = (data||[]).filter(r=>r.status==='draft');
+    const approved = (data||[]).filter(r=>['approved','client_edited'].includes(r.status));
+    document.getElementById('sendApprovalBtn').style.display=drafts.length>0?'block':'none';
+    document.getElementById('sendToAuthorsBtn').style.display=approved.length>0?'block':'none';
+  }
+
+  window.addReviewDraft = async function(){
+    const text=document.getElementById('rText').value.trim();
+    if(!text||!currentDealId)return;
+    try{
+      const {error}=await sb.from('reviews').insert({
+        deal_id:currentDealId, review_text:text,
+        platform_link:document.getElementById('rLink').value.trim(),
+        deadline:document.getElementById('rDeadline').value||null,
+        status:'draft'
+      });
+      if(error) throw error;
+      document.getElementById('rText').value='';
+      logAction('review.create','review',null,{deal_id:currentDealId});
+      loadReviews(currentDealId);
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  window.sendForApproval = async function(){
+    try{
+      const {error}=await sb.from('reviews').update({status:'pending_approval'}).eq('deal_id',currentDealId).eq('status','draft');
+      if(error) throw error;
+      await sb.from('deals').update({status:'approval'}).eq('id',currentDealId);
+      logAction('review.send_for_approval','deal',currentDealId);
+      showToast('Отправлено на согласование','success');
+      loadReviews(currentDealId);
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  window.sendToAuthors = async function(){
+    try{
+      const {error}=await sb.from('reviews').update({status:'available'}).eq('deal_id',currentDealId).in('status',['approved','client_edited']);
+      if(error) throw error;
+      await sb.from('deals').update({status:'in_work'}).eq('id',currentDealId);
+      logAction('review.send_to_authors','deal',currentDealId);
+      showToast('Передано авторам','success');
+      closeReviewModal();
+      renderDeals();
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  window.publishForAuthors = async function(dealId){
+    try{
+      const {error}=await sb.from('reviews').update({status:'available'}).eq('deal_id',dealId).in('status',['approved','client_edited']);
+      if(error) throw error;
+      await sb.from('deals').update({status:'in_work'}).eq('id',dealId);
+      logAction('review.publish_for_authors','deal',dealId);
+      showToast('Отзывы переданы авторам','success');
+      renderDeals();
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  /* ===== BRIEF MODAL (Client) ===== */
+  window.openBriefModal = async function(dealId){
+    currentDealId=dealId;
+    const briefBody=document.getElementById('briefBody');
+    briefBody.innerHTML='<div class="empty">Загрузка...</div>';
+    document.getElementById('briefModal').classList.add('open');
+
+    const {data:tmpl}=await sb.from('brief_templates').select('sections').eq('is_active',true).limit(1).single();
+    if(!tmpl){briefBody.innerHTML='<div class="empty">Шаблон брифа не найден</div>';return;}
+    const sections = tmpl.sections;
+
+    briefBody.innerHTML = sections.map((sec,si)=>{
+      const qs = sec.questions.map((q,qi)=>{
+        if(q.type==='checkbox_group'){
+          return `<div class="brief-q"><label>${q.label}</label><div class="cb-group">${(q.options||[]).map(o=>`<label class="cb-label"><input type="checkbox" name="brief_cb_${si}_${qi}" value="${o}"> ${o}</label>`).join('')}</div></div>`;
+        }
+        return `<div class="brief-q"><label>${q.label}</label><textarea name="brief_${q.key}" placeholder="Введите ответ..."></textarea></div>`;
+      }).join('');
+      return `<div class="brief-section"><h4>${sec.title}</h4>${qs}</div>`;
+    }).join('');
+  };
+  window.closeBriefModal=function(){document.getElementById('briefModal').classList.remove('open');};
+
+  window.submitBrief = async function(){
+    const form=document.getElementById('briefBody');
+    const data={};
+    form.querySelectorAll('textarea').forEach(ta=>{if(ta.name)data[ta.name]=ta.value;});
+    form.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      if(!data[cb.name])data[cb.name]=[];
+      if(cb.checked)data[cb.name].push(cb.value);
+    });
+    try{
+      const {error}=await sb.from('deals').update({brief_data:data,brief_submitted_at:new Date().toISOString(),status:'brief_completed'}).eq('id',currentDealId);
+      if(error) throw error;
+      logAction('brief.submit','deal',currentDealId);
+      showToast('Бриф отправлен!','success');
+      closeBriefModal();
+      renderDeals();
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  /* ===== APPROVAL MODAL (Client) ===== */
+  window.openApprovalModal = async function(dealId){
+    currentDealId=dealId;
+    document.getElementById('approvalModal').classList.add('open');
+    const pending=document.getElementById('pendingCol');
+    const approved=document.getElementById('approvedCol');
+    pending.innerHTML='';approved.innerHTML='';
+
+    const {data}=await sb.from('reviews').select('*').eq('deal_id',dealId).in('status',['pending_approval','approved','client_edited']);
+    (data||[]).forEach(r=>{
+      if(r.status==='pending_approval'){
+        const div=document.createElement('div');div.className='rv-item';
+        div.innerHTML=`<div style="flex:1">${esc(r.review_text)}</div>
+          <div class="rv-actions">
+            <button class="dc-btn" onclick="editReview(this,'${r.id}')">Изменить</button>
+            <button class="dc-btn primary" onclick="approveReview('${r.id}',this)">Согласовать</button>
+          </div>`;
+        pending.appendChild(div);
+      } else {
+        approved.innerHTML+=`<div class="rv-item"><div style="flex:1">${esc(r.review_text)}</div><div class="rv-actions"><span class="rv-chip approved">Согласован</span></div></div>`;
+      }
+    });
+  };
+  window.closeApprovalModal=function(){document.getElementById('approvalModal').classList.remove('open');};
+
+  window.approveReview = async function(id, btn){
+    btn.disabled=true;
+    try{
+      const {error}=await sb.from('reviews').update({status:'approved'}).eq('id',id);
+      if(error) throw error;
+      logAction('review.approve','review',id);
+      openApprovalModal(currentDealId);
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  window.editReview = function(btn, id){
+    const item = btn.closest('.rv-item');
+    const textDiv = item.querySelector('div');
+    const origText = textDiv.textContent;
+    const actionsDiv = item.querySelector('.rv-actions');
+    textDiv.innerHTML=`<textarea style="width:100%;min-height:60px;padding:8px;border:1px solid var(--accent);border-radius:6px;font-family:inherit;font-size:12px">${origText}</textarea>`;
+    actionsDiv.innerHTML=`<button class="dc-btn" onclick="openApprovalModal('${currentDealId}')">Отмена</button><button class="dc-btn primary" onclick="saveReviewEdit('${id}',this)">Сохранить</button>`;
+    textDiv.querySelector('textarea').focus();
+  };
+
+  window.saveReviewEdit = async function(id, btn){
+    const item = btn.closest('.rv-item');
+    const newText = item.querySelector('textarea').value.trim();
+    if(!newText) return;
+    try{
+      const {error}=await sb.from('reviews').update({review_text:newText, status:'client_edited'}).eq('id',id);
+      if(error) throw error;
+      logAction('review.client_edit','review',id);
+      showToast('Изменения сохранены','success');
+      openApprovalModal(currentDealId);
+    }catch(e){showToast('Ошибка: '+e.message,'error');}
+  };
+
+  /* ===== AUTHOR MY TASKS ===== */
+  async function renderAuthorTasks(){
+    title.textContent='Мои задания';
+    actions.innerHTML='';
+    body.innerHTML='<div class="empty">Загрузка...</div>';
+
+    try{
+      const {data,error}=await sb.from('reviews').select('*, deals:deal_id(deal_number,contract_number)')
+        .eq('assigned_author_id',user.id).not('status','in','(available,draft,pending_approval,client_edited,approved,cancelled)')
+        .order('created_at',{ascending:false});
+      if(error) throw error;
+      if(!data||data.length===0){body.innerHTML='<div class="empty">У вас пока нет заданий. Возьмите задание на доске.</div>';return;}
+
+      body.innerHTML='';
+      data.forEach(t=>{
+        const el=document.createElement('div');el.className='deal-card';
+        const domain=t.platform_link?new URL(t.platform_link).hostname.replace('www.',''):'—';
+        const statusLabels={in_progress:'В работе',contact_made:'Контакт',review_posted:'Отзыв опубликован',completed:'Завершено'};
+
+        let step=1;
+        if(t.status==='contact_made') step=2;
+        if(t.status==='review_posted') step=3;
+        if(t.status==='completed') step=4;
+
+        let actionHTML='';
+        if(step===1) actionHTML=`<button class="dc-btn primary" onclick="uploadScreenshot('${t.id}','contact')">Загрузить скриншот контакта</button>`;
+        else if(step===2){
+          const now=new Date();const pause=new Date(t.contact_pause_until);
+          if(now<pause){const d=pause-now;const h=Math.floor(d/3600000);const m=Math.floor((d%3600000)/60000);actionHTML=`<span style="color:var(--warning);font-weight:600">Пауза: ${h}ч ${m}м</span>`;}
+          else actionHTML=`<button class="dc-btn primary" onclick="uploadScreenshot('${t.id}','review')">Загрузить скриншот отзыва</button>`;
+        }else if(step===3){
+          const now=new Date();const pause=new Date(t.review_pause_until);
+          if(now<pause){const d=pause-now;const h=Math.floor(d/3600000);const m=Math.floor((d%3600000)/60000);actionHTML=`<span style="color:var(--warning);font-weight:600">Пауза: ${h}ч ${m}м</span>`;}
+          else actionHTML=`<button class="dc-btn primary" onclick="completeTask('${t.id}')">Закрыть задачу (скриншот)</button>`;
+        }else{actionHTML=`<span style="color:var(--success);font-weight:600">Выполнено ✓</span>`;}
+
+        const bars=[1,2,3].map(i=>`<div class="tl-bar ${i<step?'done':i===step?'active':''}"></div>`).join('');
+        const labels=['Контакт','Пауза / Отзыв','Завершение'].map((l,i)=>`<span class="tl-label ${i===step-1?'active':''}">${l}</span>`).join('');
+
+        el.innerHTML=`
+          <div class="dc-top">
+            <div class="dc-info">
+              <div class="dc-id">Сделка #${t.deals?.contract_number||t.deals?.deal_number||'—'}</div>
+              <div class="dc-company">${domain}</div>
+              <div class="dc-meta"><span>${statusLabels[t.status]||t.status}</span><span>Дедлайн: ${t.deadline?new Date(t.deadline).toLocaleDateString('ru-RU'):'—'}</span></div>
+            </div>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:12px;color:var(--fg-secondary);line-height:1.5">${esc(t.review_text)}</div>
+          <div class="timeline">${bars}</div>
+          <div class="tl-labels">${labels}</div>
+          <div class="dc-actions">${actionHTML}</div>
+        `;
+        body.appendChild(el);
+      });
+    }catch(e){body.innerHTML=`<div class="empty" style="color:var(--error)">Ошибка: ${e.message}</div>`;}
+  }
+
+  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+  /* close modals on bg click */
+  document.querySelectorAll('.modal-bg').forEach(bg=>{
+    bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');});
+  });
+})();
+</script>
+</div>
