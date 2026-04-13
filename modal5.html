@@ -1,0 +1,187 @@
+<!-- modal5.html — Аналитика / Логи действий (super_admin) -->
+<div class="m-root" id="m5Root">
+<style>
+  .m-root{display:flex;flex-direction:column;height:100%;font-family:'SN Pro',sans-serif;overflow:hidden}
+  .m-header{display:flex;justify-content:space-between;align-items:center;height:52px;min-height:52px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg-secondary);gap:12px}
+  .m-header-title{font-size:14px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;color:var(--fg)}
+  .m-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .mini-stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center}
+  .mini-stat .val{font-size:24px;font-weight:700;color:var(--fg)}
+  .mini-stat .lbl{font-size:11px;color:var(--fg-muted);margin-top:2px;text-transform:uppercase;font-weight:600}
+
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .ctrl-select{padding:8px 12px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg);outline:none;font-family:inherit;cursor:pointer}
+  .ctrl-select:focus{border-color:var(--accent)}
+  .ctrl-input{padding:8px 12px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg);outline:none;font-family:inherit;min-width:140px}
+  .ctrl-input:focus{border-color:var(--accent)}
+  .ctrl-btn{padding:8px 16px;font-size:12px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s}
+  .ctrl-btn:hover{background:var(--accent-hover)}
+  .ctrl-btn.outline{background:transparent;color:var(--fg-secondary);border:1px solid var(--border)}
+  .ctrl-btn.outline:hover{border-color:var(--accent);color:var(--fg)}
+
+  .log-table{width:100%;border-collapse:collapse}
+  .log-table th{text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;border-bottom:2px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:1}
+  .log-table td{padding:10px 12px;font-size:12px;color:var(--fg-secondary);border-bottom:1px solid var(--border-light);vertical-align:top}
+  .log-table tr:hover td{background:var(--bg)}
+  .log-type{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--accent-subtle);color:var(--fg)}
+  .log-details{font-size:11px;color:var(--fg-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .table-wrap{flex:1;overflow:auto;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary)}
+
+  .pagination{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--fg-muted)}
+
+  .empty{text-align:center;padding:40px 20px;color:var(--fg-muted);font-size:13px}
+</style>
+
+<header class="m-header">
+  <div class="m-header-title">Аналитика</div>
+</header>
+
+<div class="m-body" id="m5Body">
+  <div class="empty">Загрузка...</div>
+</div>
+
+<script>
+(function(){
+  const sb = window.supabaseClient;
+  const user = window.currentUser;
+  if(!sb||!user) return;
+  if(user.role!=='super_admin'){
+    document.getElementById('m5Body').innerHTML='<div class="empty">Доступ запрещён</div>';
+    return;
+  }
+
+  const body = document.getElementById('m5Body');
+  let logs = [];
+  let allUsers = [];
+  let filterAction = '';
+  let filterUser = '';
+  const PAGE_SIZE = 50;
+  let page = 0;
+
+  init();
+
+  async function init(){
+    body.innerHTML='<div class="empty">Загрузка...</div>';
+    try{
+      /* load users for filter */
+      const {data:users}=await sb.from('users').select('id,first_name,last_name,role').order('last_name');
+      allUsers=users||[];
+
+      /* count stats */
+      const now=new Date();
+      const today = new Date(now.getFullYear(),now.getMonth(),now.getDate()).toISOString();
+      const weekAgo = new Date(now.getTime()-7*86400000).toISOString();
+      const monthAgo = new Date(now.getTime()-30*86400000).toISOString();
+
+      const [{count:cToday},{count:cWeek},{count:cMonth},{count:cTotal}] = await Promise.all([
+        sb.from('action_logs').select('id',{count:'exact',head:true}).gte('created_at',today),
+        sb.from('action_logs').select('id',{count:'exact',head:true}).gte('created_at',weekAgo),
+        sb.from('action_logs').select('id',{count:'exact',head:true}).gte('created_at',monthAgo),
+        sb.from('action_logs').select('id',{count:'exact',head:true}),
+      ]);
+
+      body.innerHTML=`
+        <div class="stats-row">
+          <div class="mini-stat"><div class="val">${cToday||0}</div><div class="lbl">Сегодня</div></div>
+          <div class="mini-stat"><div class="val">${cWeek||0}</div><div class="lbl">За неделю</div></div>
+          <div class="mini-stat"><div class="val">${cMonth||0}</div><div class="lbl">За месяц</div></div>
+          <div class="mini-stat"><div class="val">${cTotal||0}</div><div class="lbl">Всего</div></div>
+        </div>
+        <div class="controls" id="logControls">
+          <select class="ctrl-select" id="filterActionSel">
+            <option value="">Все действия</option>
+            <option value="user.login">Вход</option>
+            <option value="user.logout">Выход</option>
+            <option value="deal.create">Создание сделки</option>
+            <option value="deal.status_change">Смена статуса сделки</option>
+            <option value="review.create">Создание отзыва</option>
+            <option value="review.send_for_approval">Отправка на согласование</option>
+            <option value="review.approve">Согласование</option>
+            <option value="review.client_edit">Правка клиентом</option>
+            <option value="task.take">Взятие задания</option>
+            <option value="task.complete">Завершение задания</option>
+            <option value="brief.submit">Отправка брифа</option>
+            <option value="user.activate">Активация пользователя</option>
+            <option value="user.block">Блокировка пользователя</option>
+          </select>
+          <select class="ctrl-select" id="filterUserSel">
+            <option value="">Все пользователи</option>
+            ${allUsers.map(u=>`<option value="${u.id}">${u.last_name} ${u.first_name} (${u.role})</option>`).join('')}
+          </select>
+          <button class="ctrl-btn" onclick="applyLogFilters()">Применить</button>
+          <button class="ctrl-btn outline" onclick="resetLogFilters()">Сбросить</button>
+        </div>
+        <div class="table-wrap" id="tableWrap"></div>
+        <div class="pagination" id="logPagination"></div>
+      `;
+
+      loadLogs();
+    }catch(e){body.innerHTML=`<div class="empty" style="color:var(--error)">Ошибка: ${e.message}</div>`;}
+  }
+
+  async function loadLogs(){
+    const wrap=document.getElementById('tableWrap');
+    wrap.innerHTML='<div class="empty">Загрузка логов...</div>';
+
+    try{
+      let q=sb.from('action_logs').select('*',{count:'exact'}).order('created_at',{ascending:false}).range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
+      if(filterAction) q=q.eq('action_type',filterAction);
+      if(filterUser) q=q.eq('user_id',filterUser);
+
+      const {data,error,count}=await q;
+      if(error) throw error;
+      logs=data||[];
+
+      if(logs.length===0){wrap.innerHTML='<div class="empty">Нет записей</div>';return;}
+
+      const getUserName=(uid)=>{
+        const u=allUsers.find(x=>x.id===uid);
+        return u?`${u.last_name} ${u.first_name}`:'—';
+      };
+
+      wrap.innerHTML=`<table class="log-table">
+        <thead><tr><th>Дата</th><th>Пользователь</th><th>Роль</th><th>Действие</th><th>Сущность</th><th>Детали</th></tr></thead>
+        <tbody>${logs.map(l=>`<tr>
+          <td style="white-space:nowrap">${new Date(l.created_at).toLocaleString('ru-RU')}</td>
+          <td>${getUserName(l.user_id)}</td>
+          <td>${l.user_role||'—'}</td>
+          <td><span class="log-type">${l.action_type}</span></td>
+          <td>${l.entity_type||'—'}</td>
+          <td class="log-details" title="${esc(JSON.stringify(l.details||{}))}">${l.details?JSON.stringify(l.details).slice(0,60):'—'}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+
+      const totalPages=Math.ceil((count||0)/PAGE_SIZE);
+      document.getElementById('logPagination').innerHTML=`
+        <span>Страница ${page+1} из ${totalPages} (${count} записей)</span>
+        <div style="display:flex;gap:6px">
+          <button class="ctrl-btn outline" ${page===0?'disabled':''} onclick="logPage(${page-1})">← Назад</button>
+          <button class="ctrl-btn outline" ${page>=totalPages-1?'disabled':''} onclick="logPage(${page+1})">Далее →</button>
+        </div>
+      `;
+    }catch(e){wrap.innerHTML=`<div class="empty" style="color:var(--error)">Ошибка: ${e.message}</div>`;}
+  }
+
+  window.applyLogFilters=function(){
+    filterAction=document.getElementById('filterActionSel').value;
+    filterUser=document.getElementById('filterUserSel').value;
+    page=0;
+    loadLogs();
+  };
+
+  window.resetLogFilters=function(){
+    document.getElementById('filterActionSel').value='';
+    document.getElementById('filterUserSel').value='';
+    filterAction='';filterUser='';page=0;
+    loadLogs();
+  };
+
+  window.logPage=function(p){page=p;loadLogs();};
+
+  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+})();
+</script>
+</div>
