@@ -1,197 +1,32 @@
-<!-- modal6.html —  Настройки профиля (все роли) -->
+<!-- modal6.html — Настройки (все роли) -->
 <div class="m-root" id="m6Root">
 <style>
-  .m-root{display:flex;flex-direction:column;height:100%;font-family:'SN Pro',sans-serif;overflow:hidden}
-  .m-header{display:flex;justify-content:space-between;align-items:center;height:52px;min-height:52px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg-secondary)}
-  .m-header-title{font-size:14px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;color:var(--fg)}
-  .m-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:24px;max-width:640px}
-
-  .section{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;display:flex;flex-direction:column;gap:16px}
-  .section-title{font-size:14px;font-weight:700;color:var(--fg);display:flex;align-items:center;gap:8px}
-  .section-title svg{width:18px;height:18px;color:var(--fg-muted)}
-  .section-desc{font-size:12px;color:var(--fg-muted);margin-top:-8px}
-
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:500px){.form-row{grid-template-columns:1fr}}
-
-  .fg{position:relative}
-  .fg input{width:100%;padding:12px 14px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg);outline:none;font-family:inherit;transition:border-color 0.2s}
-  .fg input:focus{border-color:var(--accent)}
-  .fg input:disabled{background:var(--border-light);color:var(--fg-muted)}
-  .fg label{position:absolute;left:12px;top:0;font-size:10px;font-weight:500;color:var(--fg-muted);padding:0 4px;background:var(--bg-secondary);transform:translateY(-50%)}
-
-  .save-btn{padding:12px 28px;font-size:13px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;align-self:flex-start}
-  .save-btn:hover{background:var(--accent-hover);transform:translateY(-1px)}
-  .save-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-
-  /* Avatar */
-  .avatar-section{display:flex;align-items:center;gap:20px}
-  .avatar-circle{width:64px;height:64px;border-radius:var(--radius-md);background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0;overflow:hidden}
-  .avatar-circle img{width:100%;height:100%;object-fit:cover}
-  .avatar-info{display:flex;flex-direction:column;gap:6px}
-  .avatar-name{font-size:16px;font-weight:700;color:var(--fg)}
-  .avatar-role{font-size:12px;color:var(--fg-muted)}
-
-  .divider{height:1px;background:var(--border);margin:4px 0}
-
-  .banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:500}
-  .banner.success{background:var(--success-bg);color:var(--success)}
-  .banner.error{background:var(--error-bg);color:var(--error)}
+  .m-root{display:flex;flex-direction:column;height:100%;font-family:inherit;overflow:hidden}
+  .m-header{display:flex;justify-content:space-between;align-items:center;height:44px;min-height:44px;padding:0 14px;border-bottom:1px solid var(--border)}
+  .m-header-title{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fg2)}
+  .m-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:16px;max-width:580px}
+  .section{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px}
+  .section-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .section-title svg{width:16px;height:16px;color:var(--fg3)}
+  .section-desc{font-size:11px;color:var(--fg3);margin-top:-8px}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:500px){.form-row{grid-template-columns:1fr}}
+  .fg{position:relative}.fg input{width:100%;padding:10px 12px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--inset);color:var(--fg);outline:none;font-family:inherit;transition:border-color .15s}.fg input:focus{border-color:var(--accent)}.fg input:disabled{background:var(--border-lt);color:var(--fg3)}.fg label{position:absolute;left:10px;top:0;font-size:9px;font-weight:500;color:var(--fg3);padding:0 3px;background:var(--panel);transform:translateY(-50%)}
+  .save-btn{padding:10px 24px;font-size:12px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:all .15s;align-self:flex-start}.save-btn:hover{background:var(--accent-h)}.save-btn:disabled{opacity:.4;cursor:not-allowed}
+  .avatar-section{display:flex;align-items:center;gap:16px}
+  .avatar-circle{width:52px;height:52px;border-radius:var(--r);background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
+  .avatar-info{display:flex;flex-direction:column;gap:3px}.avatar-name{font-size:14px;font-weight:700}.avatar-role{font-size:11px;color:var(--fg3)}
+  .banner{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:6px;font-size:11px;font-weight:500}.banner.success{background:var(--ok-bg);color:var(--ok)}.banner.error{background:var(--err-bg);color:var(--err)}
 </style>
-
-<header class="m-header">
-  <div class="m-header-title">Настройки</div>
-</header>
-
-<div class="m-body" id="m6Body">
-</div>
-
+<header class="m-header"><div class="m-header-title">Настройки</div></header>
+<div class="m-body" id="m6Body"></div>
 <script>
-(function(){
-  const sb = window.supabaseClient;
-  const user = window.currentUser;
-  if(!sb||!user) return;
-
-  const body = document.getElementById('m6Body');
-  const roleLabels={super_admin:'Администратор',manager:'Менеджер',client:'Клиент',author:'Автор'};
-  const initials=((user.first_name||'')[0]||'')+((user.last_name||'')[0]||'');
-
-  body.innerHTML=`
-    <!-- Profile Section -->
-    <div class="section">
-      <div class="avatar-section">
-        <div class="avatar-circle" id="settingsAvatar">${initials.toUpperCase()||'?'}</div>
-        <div class="avatar-info">
-          <div class="avatar-name">${esc(user.first_name||'')} ${esc(user.last_name||'')}</div>
-          <div class="avatar-role">${roleLabels[user.role]||user.role} · ${user.email}</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Edit Profile -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Личные данные
-      </div>
-      <form id="profileForm">
-        <div class="form-row">
-          <div class="fg"><input id="sLastName" value="${esc(user.last_name||'')}"><label>Фамилия</label></div>
-          <div class="fg"><input id="sFirstName" value="${esc(user.first_name||'')}"><label>Имя</label></div>
-        </div>
-        <div class="form-row" style="margin-top:14px">
-          <div class="fg"><input id="sMiddleName" value="${esc(user.middle_name||'')}"><label>Отчество</label></div>
-          <div class="fg"><input id="sCity" value="${esc(user.city||'')}"><label>Город</label></div>
-        </div>
-        <div class="form-row" style="margin-top:14px">
-          <div class="fg"><input id="sPhone" value="${esc(user.phone||'')}"><label>Телефон</label></div>
-          <div class="fg"><input id="sEmail" value="${esc(user.email||'')}" disabled><label>Email (нельзя изменить)</label></div>
-        </div>
-        <div id="profileBanner" style="margin-top:12px"></div>
-        <button type="submit" class="save-btn" style="margin-top:16px">Сохранить изменения</button>
-      </form>
-    </div>
-
-    <!-- Change Password -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-        Смена пароля
-      </div>
-      <div class="section-desc">Введите текущий и новый пароль для смены</div>
-      <form id="pwdForm">
-        <div class="form-row">
-          <div class="fg"><input id="curPwd" type="password" placeholder=" "><label>Текущий пароль</label></div>
-          <div class="fg"><input id="newPwd2" type="password" placeholder=" "><label>Новый пароль</label></div>
-        </div>
-        <div class="form-row" style="margin-top:14px">
-          <div class="fg"><input id="confirmPwd2" type="password" placeholder=" "><label>Подтверждение</label></div>
-        </div>
-        <div id="pwdBanner2" style="margin-top:12px"></div>
-        <button type="submit" class="save-btn" style="margin-top:16px">Сменить пароль</button>
-      </form>
-    </div>
-
-    <!-- Info -->
-    <div class="section" style="background:var(--bg)">
-      <div style="font-size:12px;color:var(--fg-muted);text-align:center">
-        АртЗапуск CRM v2.0 · Последний вход: ${user.last_login?new Date(user.last_login).toLocaleString('ru-RU'):'—'}
-      </div>
-    </div>
-  `;
-
-  /* Save profile */
-  document.getElementById('profileForm').addEventListener('submit', async e=>{
-    e.preventDefault();
-    const banner=document.getElementById('profileBanner');
-    banner.innerHTML='';
-    const btn=e.target.querySelector('.save-btn');
-    btn.disabled=true; btn.textContent='Сохранение...';
-
-    try{
-      const updates={
-        first_name: document.getElementById('sFirstName').value.trim(),
-        last_name:  document.getElementById('sLastName').value.trim(),
-        middle_name:document.getElementById('sMiddleName').value.trim(),
-        city:       document.getElementById('sCity').value.trim(),
-        phone:      document.getElementById('sPhone').value.trim(),
-      };
-      const {error}=await sb.from('users').update(updates).eq('id',user.id);
-      if(error) throw error;
-
-      /* update local state */
-      Object.assign(window.currentUser, updates);
-      /* update header */
-      const initials2=((updates.first_name||'')[0]||'')+((updates.last_name||'')[0]||'');
-      const headerAvatar=document.getElementById('headerAvatar');
-      const headerName=document.getElementById('headerName');
-      if(headerAvatar)headerAvatar.textContent=initials2.toUpperCase();
-      if(headerName)headerName.textContent=`${updates.first_name} ${updates.last_name}`.trim();
-
-      banner.innerHTML='<div class="banner success">Данные сохранены</div>';
-      logAction('user.profile_update','user',user.id);
-    }catch(e2){
-      banner.innerHTML=`<div class="banner error">Ошибка: ${e2.message}</div>`;
-    }finally{btn.disabled=false;btn.textContent='Сохранить изменения';}
-  });
-
-  /* Change password */
-  document.getElementById('pwdForm').addEventListener('submit', async e=>{
-    e.preventDefault();
-    const banner=document.getElementById('pwdBanner2');
-    banner.innerHTML='';
-    const curPwd=document.getElementById('curPwd').value;
-    const newPwd=document.getElementById('newPwd2').value;
-    const confirmPwd=document.getElementById('confirmPwd2').value;
-
-    if(curPwd!==user.password_hash){
-      banner.innerHTML='<div class="banner error">Неверный текущий пароль</div>';return;
-    }
-    if(newPwd.length<6){
-      banner.innerHTML='<div class="banner error">Минимум 6 символов</div>';return;
-    }
-    if(newPwd!==confirmPwd){
-      banner.innerHTML='<div class="banner error">Пароли не совпадают</div>';return;
-    }
-
-    const btn=e.target.querySelector('.save-btn');
-    btn.disabled=true; btn.textContent='Сохранение...';
-
-    try{
-      const {error}=await sb.from('users').update({password_hash:newPwd}).eq('id',user.id);
-      if(error) throw error;
-      window.currentUser.password_hash=newPwd;
-      banner.innerHTML='<div class="banner success">Пароль успешно изменён</div>';
-      document.getElementById('curPwd').value='';
-      document.getElementById('newPwd2').value='';
-      document.getElementById('confirmPwd2').value='';
-      logAction('user.password_change','user',user.id);
-    }catch(e2){
-      banner.innerHTML=`<div class="banner error">Ошибка: ${e2.message}</div>`;
-    }finally{btn.disabled=false;btn.textContent='Сменить пароль';}
-  });
-
-  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-})();
+(function(){const sb=window.supabaseClient,user=window.currentUser;if(!sb||!user)return;const body=document.getElementById('m6Body');const rl={super_admin:'Администратор',manager:'Менеджер',client:'Клиент',author:'Автор'};const ini=((user.first_name||'')[0]||'')+((user.last_name||'')[0]||'');
+body.innerHTML=`<div class="section"><div class="avatar-section"><div class="avatar-circle">${ini.toUpperCase()||'?'}</div><div class="avatar-info"><div class="avatar-name">${esc(user.first_name||'')} ${esc(user.last_name||'')}</div><div class="avatar-role">${rl[user.role]||user.role} · ${user.email}</div></div></div></div>
+<div class="section"><div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Личные данные</div><form id="profileForm"><div class="form-row"><div class="fg"><input id="sLN" value="${esc(user.last_name||'')}"><label>Фамилия</label></div><div class="fg"><input id="sFN" value="${esc(user.first_name||'')}"><label>Имя</label></div></div><div class="form-row" style="margin-top:12px"><div class="fg"><input id="sMN" value="${esc(user.middle_name||'')}"><label>Отчество</label></div><div class="fg"><input id="sC" value="${esc(user.city||'')}"><label>Город</label></div></div><div class="form-row" style="margin-top:12px"><div class="fg"><input id="sPh" value="${esc(user.phone||'')}"><label>Телефон</label></div><div class="fg"><input id="sEm" value="${esc(user.email||'')}" disabled><label>Email</label></div></div><div id="pB" style="margin-top:10px"></div><button type="submit" class="save-btn" style="margin-top:12px">Сохранить</button></form></div>
+<div class="section"><div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Смена пароля</div><div class="section-desc">Введите текущий и новый пароль</div><form id="pwdForm"><div class="form-row"><div class="fg"><input id="cP" type="password" placeholder=" "><label>Текущий</label></div><div class="fg"><input id="nP" type="password" placeholder=" "><label>Новый</label></div></div><div class="form-row" style="margin-top:12px"><div class="fg"><input id="cnP" type="password" placeholder=" "><label>Подтверждение</label></div></div><div id="pB2" style="margin-top:10px"></div><button type="submit" class="save-btn" style="margin-top:12px">Сменить пароль</button></form></div>
+<div class="section" style="background:var(--inset)"><div style="font-size:11px;color:var(--fg3);text-align:center">АртЗапуск CRM v2.0 · Вход: ${user.last_login?new Date(user.last_login).toLocaleString('ru-RU'):'—'}</div></div>`;
+document.getElementById('profileForm').addEventListener('submit',async e=>{e.preventDefault();const bn=document.getElementById('pB');bn.innerHTML='';const b=e.target.querySelector('.save-btn');b.disabled=true;b.textContent='...';try{const u={first_name:document.getElementById('sFN').value.trim(),last_name:document.getElementById('sLN').value.trim(),middle_name:document.getElementById('sMN').value.trim(),city:document.getElementById('sC').value.trim(),phone:document.getElementById('sPh').value.trim()};const{error}=await sb.from('users').update(u).eq('id',user.id);if(error)throw error;Object.assign(window.currentUser,u);const i2=((u.first_name||'')[0]||'')+((u.last_name||'')[0]||'');const ha=document.getElementById('headerAvatar'),hn=document.getElementById('headerName');if(ha)ha.textContent=i2.toUpperCase();if(hn)hn.textContent=`${u.first_name} ${u.last_name}`.trim();bn.innerHTML='<div class="banner success">Сохранено</div>';logAction('user.profile_update','user',user.id)}catch(e2){bn.innerHTML=`<div class="banner error">${e2.message}</div>`}finally{b.disabled=false;b.textContent='Сохранить'}});
+document.getElementById('pwdForm').addEventListener('submit',async e=>{e.preventDefault();const bn=document.getElementById('pB2');bn.innerHTML='';const cp=document.getElementById('cP').value,np=document.getElementById('nP').value,cnp=document.getElementById('cnP').value;if(cp!==user.password_hash){bn.innerHTML='<div class="banner error">Неверный текущий пароль</div>';return}if(np.length<6){bn.innerHTML='<div class="banner error">Минимум 6 символов</div>';return}if(np!==cnp){bn.innerHTML='<div class="banner error">Пароли не совпадают</div>';return}const b=e.target.querySelector('.save-btn');b.disabled=true;b.textContent='...';try{const{error}=await sb.from('users').update({password_hash:np}).eq('id',user.id);if(error)throw error;window.currentUser.password_hash=np;bn.innerHTML='<div class="banner success">Пароль изменён</div>';document.getElementById('cP').value='';document.getElementById('nP').value='';document.getElementById('cnP').value='';logAction('user.password_change','user',user.id)}catch(e2){bn.innerHTML=`<div class="banner error">${e2.message}</div>`}finally{b.disabled=false;b.textContent='Сменить пароль'}});
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}})();
 </script>
 </div>
