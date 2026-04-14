@@ -1,364 +1,53 @@
-<!-- modal1.html — Дашборд  (admin/manager) | Доска заданий (author) -->
+<!-- modal1.html — Дашборд (admin/manager) | Доска заданий (author) -->
 <div class="m-root" id="m1Root">
 <style>
-  .m-root{display:flex;flex-direction:column;height:100%;font-family:'SN Pro',sans-serif;overflow:hidden}
-  .m-header{display:flex;justify-content:space-between;align-items:center;height:52px;min-height:52px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg-secondary)}
-  .m-header-title{font-size:14px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;color:var(--fg)}
-  .m-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:20px}
-
-  /* Stats grid */
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-  .stat-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;display:flex;flex-direction:column;gap:8px;transition:box-shadow 0.2s}
-  .stat-card:hover{box-shadow:var(--shadow-md)}
-  .stat-label{font-size:12px;font-weight:600;color:var(--fg-muted);text-transform:uppercase;letter-spacing:0.04em}
-  .stat-value{font-size:28px;font-weight:700;color:var(--fg);line-height:1}
-  .stat-sub{font-size:12px;color:var(--fg-secondary)}
-  .stat-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
-  .stat-icon svg{width:18px;height:18px}
-  .stat-icon.blue{background:var(--info-bg);color:var(--info)}
-  .stat-icon.green{background:var(--success-bg);color:var(--success)}
-  .stat-icon.amber{background:var(--warning-bg);color:var(--warning)}
-  .stat-icon.red{background:var(--error-bg);color:var(--error)}
-
-  /* Recent list */
-  .section-title{font-size:13px;font-weight:700;color:var(--fg);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:8px}
-  .recent-list{display:flex;flex-direction:column;gap:8px}
-  .recent-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);transition:box-shadow 0.2s;cursor:pointer}
-  .recent-item:hover{box-shadow:var(--shadow-sm)}
-  .ri-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-  .ri-dot.green{background:var(--success)}.ri-dot.amber{background:var(--warning)}.ri-dot.blue{background:var(--info)}.ri-dot.gray{background:var(--fg-muted)}
-  .ri-body{flex:1;min-width:0}
-  .ri-title{font-size:13px;font-weight:600;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ri-sub{font-size:11px;color:var(--fg-muted);margin-top:2px}
-  .ri-right{text-align:right;flex-shrink:0}
-  .ri-amount{font-size:14px;font-weight:700;color:var(--fg)}
-  .ri-date{font-size:11px;color:var(--fg-muted)}
-
-  /* Kanban (author) */
-  .kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;flex:1;min-height:0}
-  @media(max-width:1100px){.kanban{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:600px){.kanban{grid-template-columns:1fr}}
-  .kanban-col{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;min-height:200px}
-  .kanban-col-header{padding:12px 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--fg-secondary);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-  .kanban-col-header .count{background:var(--border);border-radius:99px;padding:2px 8px;font-size:11px;font-weight:700;color:var(--fg-muted)}
-  .kanban-col-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
-
-  .k-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;display:flex;flex-direction:column;gap:8px;transition:box-shadow 0.2s,transform 0.2s;cursor:default}
-  .k-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
-  .k-platform{font-size:11px;font-weight:600;color:var(--info);text-transform:uppercase}
-  .k-text{font-size:12px;color:var(--fg-secondary);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .m-root{display:flex;flex-direction:column;height:100%;font-family:inherit;overflow:hidden}
+  .m-header{display:flex;justify-content:space-between;align-items:center;height:44px;min-height:44px;padding:0 14px;border-bottom:1px solid var(--border)}
+  .m-header-title{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fg2)}
+  .m-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px}
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  .stat-card{background:var(--inset);border:1px solid var(--border-lt);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:6px}
+  .stat-label{font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.05em}
+  .stat-value{font-size:26px;font-weight:700;color:var(--fg);line-height:1}
+  .stat-sub{font-size:11px;color:var(--fg2)}
+  .stat-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:2px}
+  .stat-icon svg{width:16px;height:16px}
+  .stat-icon.blue{background:var(--info-bg);color:var(--info)}.stat-icon.green{background:var(--ok-bg);color:var(--ok)}.stat-icon.amber{background:var(--warn-bg);color:var(--warn)}.stat-icon.red{background:var(--err-bg);color:var(--err)}
+  .section-title{font-size:11px;font-weight:700;color:var(--fg2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  .recent-list{display:flex;flex-direction:column;gap:6px}
+  .recent-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--inset);border:1px solid var(--border-lt);border-radius:6px;cursor:pointer;transition:box-shadow .15s}
+  .recent-item:hover{box-shadow:var(--sh-s)}
+  .ri-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .ri-dot.green{background:var(--ok)}.ri-dot.amber{background:var(--warn)}.ri-dot.blue{background:var(--info)}.ri-dot.gray{background:var(--fg3)}
+  .ri-body{flex:1;min-width:0}.ri-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ri-sub{font-size:10px;color:var(--fg3);margin-top:1px}
+  .ri-right{text-align:right;flex-shrink:0}.ri-amount{font-size:13px;font-weight:700}.ri-date{font-size:10px;color:var(--fg3)}
+  .kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;flex:1;min-height:0}
+  @media(max-width:1100px){.kanban{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.kanban{grid-template-columns:1fr}}
+  .kanban-col{display:flex;flex-direction:column;background:var(--inset);border:1px solid var(--border-lt);border-radius:var(--r);overflow:hidden;min-height:160px}
+  .kanban-col-header{padding:10px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--fg3);border-bottom:1px solid var(--border-lt);display:flex;justify-content:space-between;align-items:center}
+  .kanban-col-header .count{background:var(--border);border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700;color:var(--fg3)}
+  .kanban-col-body{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:6px}
+  .k-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:6px;transition:box-shadow .15s}
+  .k-card:hover{box-shadow:var(--sh-s)}
+  .k-platform{font-size:10px;font-weight:600;color:var(--info);text-transform:uppercase}
+  .k-text{font-size:11px;color:var(--fg2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .k-footer{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
-  .k-deadline{font-size:11px;color:var(--fg-muted)}
-  .k-btn{padding:6px 14px;font-size:11px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:all 0.2s}
-  .k-btn:hover{background:var(--accent-hover)}
-  .k-btn:disabled{opacity:0.4;cursor:not-allowed}
-  .k-btn.outline{background:transparent;color:var(--fg-secondary);border:1px solid var(--border)}
-  .k-timer{font-size:11px;font-weight:600;color:var(--warning);padding:4px 10px;background:var(--warning-bg);border-radius:6px}
-  .k-done{font-size:11px;font-weight:600;color:var(--success);padding:4px 10px;background:var(--success-bg);border-radius:6px}
-  .k-chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;text-transform:uppercase}
-  .k-chip.in-progress{background:var(--info-bg);color:var(--info)}
-  .k-chip.waiting{background:var(--warning-bg);color:var(--warning)}
-
-  /* Empty */
-  .empty{text-align:center;padding:40px 20px;color:var(--fg-muted);font-size:13px}
+  .k-deadline{font-size:10px;color:var(--fg3)}
+  .k-btn{padding:5px 12px;font-size:10px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:5px;cursor:pointer;transition:all .15s}
+  .k-btn:hover{background:var(--accent-h)}.k-btn:disabled{opacity:.4;cursor:not-allowed}
+  .k-timer{font-size:10px;font-weight:600;color:var(--warn);padding:3px 8px;background:var(--warn-bg);border-radius:5px}
+  .k-done{font-size:10px;font-weight:600;color:var(--ok);padding:3px 8px;background:var(--ok-bg);border-radius:5px}
+  .empty{text-align:center;padding:30px 16px;color:var(--fg3);font-size:12px}
 </style>
-
-<header class="m-header">
-  <div class="m-header-title" id="m1Title">Загрузка...</div>
-</header>
-
-<div class="m-body" id="m1Body">
-  <div class="empty">Загрузка данных...</div>
-</div>
-
+<header class="m-header"><div class="m-header-title" id="m1Title">Загрузка...</div></header>
+<div class="m-body" id="m1Body"><div class="empty">Загрузка данных...</div></div>
 <script>
-(function(){
-  const sb = window.supabaseClient;
-  const user = window.currentUser;
-  if(!sb||!user) return;
-
-  const title = document.getElementById('m1Title');
-  const body = document.getElementById('m1Body');
-
-  if(user.role==='author'){
-    renderAuthorBoard();
-  } else {
-    renderDashboard();
-  }
-
-  /* ===== DASHBOARD (admin/manager) ===== */
-  async function renderDashboard(){
-    title.textContent = 'Дашборд';
-    body.innerHTML = '<div class="empty">Загрузка статистики...</div>';
-
-    try {
-      const isAdmin = user.role==='super_admin';
-      const mgrFilter = isAdmin ? {} : {manager_id: user.id};
-
-      /* deals */
-      let q = sb.from('deals').select('id,status,sum_deal,created_at,contract_number', {count:'exact'});
-      if(!isAdmin) q = q.eq('manager_id', user.id);
-      const {data:deals, count:totalDeals} = await q.order('created_at',{ascending:false});
-
-      const active = (deals||[]).filter(d=>!['completed','cancelled'].includes(d.status)).length;
-      const completed = (deals||[]).filter(d=>d.status==='completed').length;
-      const totalSum = (deals||[]).reduce((s,d)=>s+(parseFloat(d.sum_deal)||0),0);
-
-      /* reviews */
-      let rq = sb.from('reviews').select('id,status,deal_id');
-      if(!isAdmin){
-        const dealIds = (deals||[]).map(d=>d.id);
-        if(dealIds.length>0) rq = rq.in('deal_id', dealIds);
-        else rq = rq.eq('deal_id','00000000-0000-0000-0000-000000000000');
-      }
-      const {data:reviews} = await rq;
-      const revs = reviews||[];
-      const revsWork = revs.filter(r=>['in_progress','contact_made','review_posted','available'].includes(r.status)).length;
-      const revsDone = revs.filter(r=>r.status==='completed').length;
-      const revsApproval = revs.filter(r=>['pending_approval','client_edited'].includes(r.status)).length;
-
-      /* recent 5 deals */
-      const recent = (deals||[]).slice(0,6);
-
-      body.innerHTML = `
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
-            <div class="stat-label">Всего сделок</div>
-            <div class="stat-value">${totalDeals||0}</div>
-            <div class="stat-sub">Активных: ${active}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-            <div class="stat-label">Завершено</div>
-            <div class="stat-value">${completed}</div>
-            <div class="stat-sub">Отзывов выполнено: ${revsDone}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></div>
-            <div class="stat-label">Отзывы в работе</div>
-            <div class="stat-value">${revsWork}</div>
-            <div class="stat-sub">На согласовании: ${revsApproval}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-            <div class="stat-label">Выручка</div>
-            <div class="stat-value">${formatMoney(totalSum)} ₽</div>
-            <div class="stat-sub">Всего по сделкам</div>
-          </div>
-        </div>
-
-        <div>
-          <div class="section-title">Последние сделки</div>
-          <div class="recent-list" id="recentList"></div>
-        </div>
-      `;
-
-      const rl = document.getElementById('recentList');
-      if(recent.length===0){
-        rl.innerHTML='<div class="empty">Сделок пока нет</div>';
-      } else {
-        rl.innerHTML = recent.map(d=>{
-          const dotCls = d.status==='completed'?'green':d.status==='in_work'?'amber':d.status==='cancelled'?'gray':'blue';
-          const statusLabels = {brief:'Бриф',brief_completed:'Бриф завершён',review_creation:'Создание отзывов',approval:'Согласование',in_work:'В работе',completed:'Завершена',cancelled:'Отменена'};
-          return `<div class="recent-item">
-            <div class="ri-dot ${dotCls}"></div>
-            <div class="ri-body">
-              <div class="ri-title">Сделка #${d.contract_number||'—'}</div>
-              <div class="ri-sub">${statusLabels[d.status]||d.status}</div>
-            </div>
-            <div class="ri-right">
-              <div class="ri-amount">${formatMoney(d.sum_deal)} ₽</div>
-              <div class="ri-date">${new Date(d.created_at).toLocaleDateString('ru-RU')}</div>
-            </div>
-          </div>`;
-        }).join('');
-      }
-    } catch(e){
-      body.innerHTML='<div class="empty" style="color:var(--error)">Ошибка загрузки: '+e.message+'</div>';
-    }
-  }
-
-  /* ===== AUTHOR KANBAN BOARD ===== */
-  async function renderAuthorBoard(){
-    title.textContent = 'Доска заданий';
-    body.innerHTML = '<div class="empty">Загрузка заданий...</div>';
-
-    try {
-      const {data:tasks,error} = await sb.from('reviews')
-        .select('*, deals:deal_id(deal_number,contract_number)')
-        .or(`status.eq.available,assigned_author_id.eq.${user.id}`)
-        .not('status','in','(draft,pending_approval,client_edited,approved,cancelled)')
-        .order('created_at',{ascending:false});
-
-      if(error) throw error;
-      const all = tasks||[];
-
-      const cols = [
-        {key:'available', label:'Доступные', filter:t=>t.status==='available'},
-        {key:'contact',   label:'Контакт',   filter:t=>['in_progress','contact_made'].includes(t.status)&&t.assigned_author_id===user.id},
-        {key:'review',    label:'Отзыв',     filter:t=>t.status==='review_posted'&&t.assigned_author_id===user.id},
-        {key:'done',      label:'Завершено', filter:t=>t.status==='completed'&&t.assigned_author_id===user.id},
-      ];
-
-      body.innerHTML = `<div class="kanban" id="kanbanGrid"></div>`;
-      const grid = document.getElementById('kanbanGrid');
-
-      cols.forEach(col=>{
-        const items = all.filter(col.filter);
-        const colEl = document.createElement('div');
-        colEl.className='kanban-col';
-        colEl.innerHTML=`
-          <div class="kanban-col-header">${col.label}<span class="count">${items.length}</span></div>
-          <div class="kanban-col-body" id="kcol-${col.key}"></div>
-        `;
-        grid.appendChild(colEl);
-
-        const colBody = colEl.querySelector('.kanban-col-body');
-        if(items.length===0){
-          colBody.innerHTML='<div class="empty" style="padding:20px;font-size:12px">Пусто</div>';
-          return;
-        }
-
-        items.forEach(t=>{
-          const card = document.createElement('div');
-          card.className='k-card';
-
-          const domain = t.platform_link ? new URL(t.platform_link).hostname.replace('www.','') : '—';
-          const deadline = t.deadline ? new Date(t.deadline).toLocaleDateString('ru-RU') : '—';
-          const dealLabel = t.deals ? '#'+(t.deals.contract_number||t.deals.deal_number) : '';
-
-          let actionHtml = '';
-
-          if(col.key==='available'){
-            actionHtml=`<button class="k-btn" onclick="takeTask('${t.id}',this)">Взять</button>`;
-          } else if(col.key==='contact'){
-            if(t.status==='in_progress'){
-              actionHtml=`<button class="k-btn" onclick="uploadScreenshot('${t.id}','contact')">Загрузить скриншот</button>`;
-            } else if(t.status==='contact_made'){
-              const pauseEnd = new Date(t.contact_pause_until);
-              const now = new Date();
-              if(now < pauseEnd){
-                const diff = pauseEnd - now;
-                const h=Math.floor(diff/3600000); const m=Math.floor((diff%3600000)/60000);
-                actionHtml=`<span class="k-timer">Пауза: ${h}ч ${m}м</span>`;
-              } else {
-                actionHtml=`<button class="k-btn" onclick="uploadScreenshot('${t.id}','review')">Оставить отзыв</button>`;
-              }
-            }
-          } else if(col.key==='review'){
-            const pauseEnd = new Date(t.review_pause_until);
-            const now = new Date();
-            if(now < pauseEnd){
-              const diff = pauseEnd - now;
-              const h=Math.floor(diff/3600000); const m=Math.floor((diff%3600000)/60000);
-              actionHtml=`<span class="k-timer">Пауза: ${h}ч ${m}м</span>`;
-            } else {
-              actionHtml=`<button class="k-btn" onclick="completeTask('${t.id}')">Закрыть задачу</button>`;
-            }
-          } else {
-            actionHtml=`<span class="k-done">Выполнено</span>`;
-          }
-
-          card.innerHTML=`
-            <div class="k-platform">${domain} ${dealLabel?'· Сделка '+dealLabel:''}</div>
-            <div class="k-text">${escapeH(t.review_text)}</div>
-            <div class="k-footer">
-              <span class="k-deadline">до ${deadline}</span>
-              ${actionHtml}
-            </div>
-          `;
-          colBody.appendChild(card);
-        });
-      });
-    } catch(e){
-      body.innerHTML='<div class="empty" style="color:var(--error)">Ошибка: '+e.message+'</div>';
-    }
-  }
-
-  /* Author actions */
-  window.takeTask = async function(id, btn){
-    btn.disabled=true; btn.textContent='...';
-    try{
-      /* check uniqueness */
-      const {data:task} = await sb.from('reviews').select('platform_link').eq('id',id).single();
-      if(task&&task.platform_link){
-        const {data:existing} = await sb.from('reviews').select('id')
-          .eq('assigned_author_id',user.id).eq('platform_link',task.platform_link)
-          .not('status','eq','cancelled');
-        if(existing&&existing.length>0){
-          showToast('Вы уже работали с этой площадкой','error');
-          btn.disabled=false; btn.textContent='Взять'; return;
-        }
-      }
-      const {error} = await sb.from('reviews').update({
-        assigned_author_id:user.id, assigned_at:new Date().toISOString(), status:'in_progress'
-      }).eq('id',id);
-      if(error) throw error;
-      logAction('task.take','review',id,{platform_link:task?.platform_link});
-      showToast('Задание взято в работу','success');
-      renderAuthorBoard();
-    }catch(e){showToast('Ошибка: '+e.message,'error');btn.disabled=false;btn.textContent='Взять';}
-  };
-
-  window.uploadScreenshot = async function(id, type){
-    const input = document.createElement('input');
-    input.type='file'; input.accept='image/*';
-    input.onchange = async function(){
-      if(!input.files[0]) return;
-      const file = input.files[0];
-      const ext = file.name.split('.').pop();
-      const path = `${id}/${type}/${Date.now()}.${ext}`;
-      try {
-        const {error:upErr} = await sb.storage.from('task-attachments').upload(path,file);
-        if(upErr) throw upErr;
-        const {data:urlData} = sb.storage.from('task-attachments').getPublicUrl(path);
-
-        const updateData = {};
-        if(type==='contact'){
-          updateData.contact_screenshot_url = urlData.publicUrl;
-          updateData.contact_made_at = new Date().toISOString();
-          updateData.status = 'contact_made';
-        } else {
-          updateData.review_screenshot_url = urlData.publicUrl;
-          updateData.review_posted_at = new Date().toISOString();
-          updateData.status = 'review_posted';
-        }
-        const {error} = await sb.from('reviews').update(updateData).eq('id',id);
-        if(error) throw error;
-        logAction('task.'+type+'_upload','review',id);
-        showToast('Скриншот загружен','success');
-        renderAuthorBoard();
-      }catch(e){showToast('Ошибка: '+e.message,'error');}
-    };
-    input.click();
-  };
-
-  window.completeTask = async function(id){
-    const input = document.createElement('input');
-    input.type='file'; input.accept='image/*';
-    input.onchange = async function(){
-      if(!input.files[0]) return;
-      const file = input.files[0];
-      const ext = file.name.split('.').pop();
-      const path = `${id}/final/${Date.now()}.${ext}`;
-      try {
-        const {error:upErr} = await sb.storage.from('task-attachments').upload(path,file);
-        if(upErr) throw upErr;
-        const {data:urlData} = sb.storage.from('task-attachments').getPublicUrl(path);
-        const {error} = await sb.from('reviews').update({
-          review_screenshot_url:urlData.publicUrl, status:'completed', completed_at:new Date().toISOString()
-        }).eq('id',id);
-        if(error) throw error;
-        logAction('task.complete','review',id);
-        showToast('Задача завершена!','success');
-        renderAuthorBoard();
-      }catch(e){showToast('Ошибка: '+e.message,'error');}
-    };
-    input.click();
-  };
-
-  function escapeH(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
-})();
+(function(){const sb=window.supabaseClient,user=window.currentUser;if(!sb||!user)return;const title=document.getElementById('m1Title'),body=document.getElementById('m1Body');if(user.role==='author')renderAuthorBoard();else renderDashboard();
+async function renderDashboard(){title.textContent='Дашборд';body.innerHTML='<div class="empty">Загрузка...</div>';try{const isA=user.role==='super_admin';let q=sb.from('deals').select('id,status,sum_deal,created_at,contract_number',{count:'exact'});if(!isA)q=q.eq('manager_id',user.id);const{data:deals,count:td}=await q.order('created_at',{ascending:false});const act=(deals||[]).filter(d=>!['completed','cancelled'].includes(d.status)).length,comp=(deals||[]).filter(d=>d.status==='completed').length,ts=(deals||[]).reduce((s,d)=>s+(parseFloat(d.sum_deal)||0),0);let rq=sb.from('reviews').select('id,status,deal_id');if(!isA){const di=(deals||[]).map(d=>d.id);if(di.length>0)rq=rq.in('deal_id',di);else rq=rq.eq('deal_id','00000000-0000-0000-0000-000000000000')}const{data:revs}=await rq;const rv=revs||[],rw=rv.filter(r=>['in_progress','contact_made','review_posted','available'].includes(r.status)).length,rd=rv.filter(r=>r.status==='completed').length,ra=rv.filter(r=>['pending_approval','client_edited'].includes(r.status)).length;const rec=(deals||[]).slice(0,6);body.innerHTML=`<div class="stats-grid"><div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div><div class="stat-label">Всего сделок</div><div class="stat-value">${td||0}</div><div class="stat-sub">Активных: ${act}</div></div><div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div class="stat-label">Завершено</div><div class="stat-value">${comp}</div><div class="stat-sub">Отзывов: ${rd}</div></div><div class="stat-card"><div class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></div><div class="stat-label">В работе</div><div class="stat-value">${rw}</div><div class="stat-sub">На согл.: ${ra}</div></div><div class="stat-card"><div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div class="stat-label">Выручка</div><div class="stat-value">${formatMoney(ts)} ₽</div><div class="stat-sub">По сделкам</div></div></div><div><div class="section-title">Последние сделки</div><div class="recent-list" id="recentList"></div></div>`;const rl=document.getElementById('recentList');if(!rec.length){rl.innerHTML='<div class="empty">Сделок нет</div>'}else{rl.innerHTML=rec.map(d=>{const dc=d.status==='completed'?'green':d.status==='in_work'?'amber':d.status==='cancelled'?'gray':'blue';const sl={brief:'Бриф',brief_completed:'Бриф готов',review_creation:'Создание',approval:'Согласование',in_work:'В работе',completed:'Завершена',cancelled:'Отменена'};return`<div class="recent-item"><div class="ri-dot ${dc}"></div><div class="ri-body"><div class="ri-title">Сделка #${d.contract_number||'—'}</div><div class="ri-sub">${sl[d.status]||d.status}</div></div><div class="ri-right"><div class="ri-amount">${formatMoney(d.sum_deal)} ₽</div><div class="ri-date">${new Date(d.created_at).toLocaleDateString('ru-RU')}</div></div></div>`}).join('')}}catch(e){body.innerHTML='<div class="empty" style="color:var(--err)">Ошибка: '+e.message+'</div>'}}
+async function renderAuthorBoard(){title.textContent='Доска заданий';body.innerHTML='<div class="empty">Загрузка...</div>';try{const{data:tasks,error}=await sb.from('reviews').select('*, deals:deal_id(deal_number,contract_number)').or(`status.eq.available,assigned_author_id.eq.${user.id}`).not('status','in','(draft,pending_approval,client_edited,approved,cancelled)').order('created_at',{ascending:false});if(error)throw error;const all=tasks||[];const cols=[{key:'available',label:'Доступные',filter:t=>t.status==='available'},{key:'contact',label:'Контакт',filter:t=>['in_progress','contact_made'].includes(t.status)&&t.assigned_author_id===user.id},{key:'review',label:'Отзыв',filter:t=>t.status==='review_posted'&&t.assigned_author_id===user.id},{key:'done',label:'Завершено',filter:t=>t.status==='completed'&&t.assigned_author_id===user.id}];body.innerHTML='<div class="kanban" id="kanbanGrid"></div>';const grid=document.getElementById('kanbanGrid');cols.forEach(col=>{const items=all.filter(col.filter);const ce=document.createElement('div');ce.className='kanban-col';ce.innerHTML=`<div class="kanban-col-header">${col.label}<span class="count">${items.length}</span></div><div class="kanban-col-body" id="kcol-${col.key}"></div>`;grid.appendChild(ce);const cb=ce.querySelector('.kanban-col-body');if(!items.length){cb.innerHTML='<div class="empty" style="padding:16px;font-size:11px">Пусто</div>';return}items.forEach(t=>{const card=document.createElement('div');card.className='k-card';const dom=t.platform_link?new URL(t.platform_link).hostname.replace('www.',''):'—';const dl=t.deadline?new Date(t.deadline).toLocaleDateString('ru-RU'):'—';const dL=t.deals?'#'+(t.deals.contract_number||t.deals.deal_number):'';let ah='';if(col.key==='available')ah=`<button class="k-btn" onclick="takeTask('${t.id}',this)">Взять</button>`;else if(col.key==='contact'){if(t.status==='in_progress')ah=`<button class="k-btn" onclick="uploadScreenshot('${t.id}','contact')">Скриншот</button>`;else if(t.status==='contact_made'){const pe=new Date(t.contact_pause_until),now=new Date();if(now<pe){const df=pe-now,h=Math.floor(df/3600000),m=Math.floor((df%3600000)/60000);ah=`<span class="k-timer">${h}ч ${m}м</span>`}else ah=`<button class="k-btn" onclick="uploadScreenshot('${t.id}','review')">Отзыв</button>`}}else if(col.key==='review'){const pe=new Date(t.review_pause_until),now=new Date();if(now<pe){const df=pe-now,h=Math.floor(df/3600000),m=Math.floor((df%3600000)/60000);ah=`<span class="k-timer">${h}ч ${m}м</span>`}else ah=`<button class="k-btn" onclick="completeTask('${t.id}')">Закрыть</button>`}else ah='<span class="k-done">Готово</span>';card.innerHTML=`<div class="k-platform">${dom} ${dL?'· '+dL:''}</div><div class="k-text">${escH(t.review_text)}</div><div class="k-footer"><span class="k-deadline">до ${dl}</span>${ah}</div>`;cb.appendChild(card)})})}catch(e){body.innerHTML='<div class="empty" style="color:var(--err)">Ошибка: '+e.message+'</div>'}}
+window.takeTask=async function(id,btn){btn.disabled=true;btn.textContent='...';try{const{data:task}=await sb.from('reviews').select('platform_link').eq('id',id).single();if(task?.platform_link){const{data:ex}=await sb.from('reviews').select('id').eq('assigned_author_id',user.id).eq('platform_link',task.platform_link).not('status','eq','cancelled');if(ex?.length>0){showToast('Вы уже работали с этой площадкой','error');btn.disabled=false;btn.textContent='Взять';return}}const{error}=await sb.from('reviews').update({assigned_author_id:user.id,assigned_at:new Date().toISOString(),status:'in_progress'}).eq('id',id);if(error)throw error;logAction('task.take','review',id,{platform_link:task?.platform_link});showToast('Задание взято','success');renderAuthorBoard()}catch(e){showToast('Ошибка: '+e.message,'error');btn.disabled=false;btn.textContent='Взять'}};
+window.uploadScreenshot=async function(id,type){const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=async function(){if(!inp.files[0])return;const f=inp.files[0],ext=f.name.split('.').pop(),path=`${id}/${type}/${Date.now()}.${ext}`;try{const{error:ue}=await sb.storage.from('task-attachments').upload(path,f);if(ue)throw ue;const{data:ud}=sb.storage.from('task-attachments').getPublicUrl(path);const up={};if(type==='contact'){up.contact_screenshot_url=ud.publicUrl;up.contact_made_at=new Date().toISOString();up.status='contact_made'}else{up.review_screenshot_url=ud.publicUrl;up.review_posted_at=new Date().toISOString();up.status='review_posted'}const{error}=await sb.from('reviews').update(up).eq('id',id);if(error)throw error;logAction('task.'+type+'_upload','review',id);showToast('Скриншот загружен','success');renderAuthorBoard()}catch(e){showToast('Ошибка: '+e.message,'error')}};inp.click()};
+window.completeTask=async function(id){const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=async function(){if(!inp.files[0])return;const f=inp.files[0],ext=f.name.split('.').pop(),path=`${id}/final/${Date.now()}.${ext}`;try{const{error:ue}=await sb.storage.from('task-attachments').upload(path,f);if(ue)throw ue;const{data:ud}=sb.storage.from('task-attachments').getPublicUrl(path);const{error}=await sb.from('reviews').update({review_screenshot_url:ud.publicUrl,status:'completed',completed_at:new Date().toISOString()}).eq('id',id);if(error)throw error;logAction('task.complete','review',id);showToast('Задача завершена!','success');renderAuthorBoard()}catch(e){showToast('Ошибка: '+e.message,'error')}};inp.click()};
+function escH(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}})();
 </script>
 </div>
